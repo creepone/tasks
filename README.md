@@ -12,6 +12,7 @@ simple task manager with iOS and a web client
 * Apple Push Notifications
 * OpenID
 * [ratchet](http://maker.github.com/ratchet/)
+* [openid-selector](http://code.google.com/p/openid-selector/)
 
 ### Design Notes
 
