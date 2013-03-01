@@ -69,6 +69,21 @@ This is only done for devices, the web clients have to poll for the changes them
 
     {  _id: "8d9b6830824611e29e960800200c9a66", // custom generated, per-device identifier
        name: "Tomas Vana's iPod Touch",
+       username: "creepone",
        notificationToken: "9a22f500824611e29e960800200c9a66", // APN token, updated on each startup of the app
        version: 22 // last sync batch id that was sent to this client
     }
+
+##### User
+
+    {  username: "creepone",
+       openid: "???"
+    }
+    
+##### Authentication
+
+On the device, the authentication is only performed the very first time. After logging in with an openid that has been
+associated with a valid account on the server (or creating this account on-demand), a device token is generated on the
+server. Client stores this in the keychain and uses to authenticate for all the subsequent requests.
+
+In the browser, the authentication has to be performed each time (unless there is a cookie for an already authenticated session).
