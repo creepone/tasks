@@ -26,7 +26,8 @@ Authoritative server for the sync, web and iOS clients.
 		 type: "discrete",
          time: "2012-12-28T06:15:33.035Z"
        },
-	   timestamp: 1362086325042	// ticks
+	   timestamp: 1362086325042,	// ticks
+	   _id: "4c2209fef3924d31102bd84b" // primary-key
     }
 
 For the reminder there is type `"discrete"` (on-page notification and app-badge) and `"important"` (chrome desktop notification and alert with sound on the device). On the device, local notifications are used by default. In case the task was created / changed and not yet synchronized with the device, push notifications are used.
@@ -34,10 +35,10 @@ For the reminder there is type `"discrete"` (on-page notification and app-badge)
 ##### Patch
 
 	{  batchId: 23,
-       clientId: "client-ios-123",
-	   timestamp: 1362086325042	// ticks
-	   $add: { ..task to add.. },
-	   $edit: { 
+       relId: "4c2209fef3924d31102bd84b",	// id of the edited object (e.g. task)
+	   timestamp: 1362086325042,	// ticks
+	   operation: "task-edit",	// task-add, task-edit, task-remove
+	   body: { 
 	     name: {
 	       old: "Do something",
            new: "Do something new" 
@@ -50,8 +51,7 @@ For the reminder there is type `"discrete"` (on-page notification and app-badge)
          reminder: {
 		   time: null
          }
-       },
-	   $remove: "..id of task to remove.."
+       }
 	}
 
 Patches are submitted in sync batches from clients. An auto-increase numbering scheme is used. When requesting sync data, clients send the latest batch number and get all the batches submitted later (excluding their own).
