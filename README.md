@@ -11,6 +11,7 @@ simple task manager with iOS and a web client
 * MongoDB
 * Apple Push Notifications
 * OpenID
+* [ratchet](http://maker.github.com/ratchet/)
 
 ### Design Notes
 
