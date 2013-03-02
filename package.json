@@ -2,7 +2,8 @@
   "name": "tasks",
   "version": "0.0.1",
   "dependencies": {
-    "express": "3.1.x"
+    "express": "3.1.x",
+	"openid": "0.5.x"
   },
   "engines": {
     "node": "0.8.x",
