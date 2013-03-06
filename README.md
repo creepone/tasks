@@ -69,11 +69,11 @@ On the server, there is a list of pending reminders for the clients that are out
 
 This is only done for devices, the web clients have to poll for the changes themselves.
 
-##### Client
+##### Device
 
     {  name: "Tomas Vana's iPod Touch",
        username: "creepone",
-       token: "8d9b6830824611e29e960800200c9a66", // authentication token
+       token: "3c8d8095-0a0c-4079-8625-a97378bb3b86", // authentication token
        notificationToken: "9a22f500824611e29e960800200c9a66", // APN token, updated on each startup of the app
        version: 22 // last sync batch id that was sent to this client
     }
@@ -81,7 +81,7 @@ This is only done for devices, the web clients have to poll for the changes them
 ##### User
 
     {  username: "creepone",
-       openid: "???"
+       openid: "https://www.google.com/accounts/o8/id?id=..."
     }
     
 ##### Authentication
