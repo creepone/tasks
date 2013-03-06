@@ -6,8 +6,8 @@ var authentication = require('./private/authentication');
 app.use(express.bodyParser());
 app.use(express.static(__dirname + '/public'));
 
-app.get('/ios/authenticate', authentication.authenticateDevice);
-app.get('/ios/verify', authentication.verifyDevice);
-app.post('/ios/register', authentication.registerDevice);
+app.get('/ios/authenticate', authentication.device.authenticate);
+app.get('/ios/verify', authentication.device.verify);
+app.post('/ios/register', authentication.device.register);
 
 app.listen(process.env.PORT || 8081);

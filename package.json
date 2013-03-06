@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "dependencies": {
     "express": "3.1.x",
-	"openid": "0.5.x"
+	"openid": "0.5.x",
+	"mongodb": "1.2.x",
+	"node-uuid": "1.4.x",
+	"underscore": "1.4.x"
   },
   "engines": {
     "node": "0.8.x",
