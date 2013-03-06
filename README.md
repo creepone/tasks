@@ -14,6 +14,7 @@ simple task manager with iOS and a web client
 * [ratchet](http://maker.github.com/ratchet/)
 * [openid-selector](http://code.google.com/p/openid-selector/)
 * [keychainutils](http://gorgando.com/blog/tag/sfhfkeychainutils)
+* [dust](http://akdubya.github.com/dustjs/) ([usage](http://spalatnik.com/blog/?p=54))
 
 ### Design Notes
 
