@@ -6,7 +6,9 @@
 	"openid": "0.5.x",
 	"mongodb": "1.2.x",
 	"node-uuid": "1.4.x",
-	"underscore": "1.4.x"
+	"underscore": "1.4.x",
+	"consolidate": "0.8.x",
+	"dustjs-linkedin": "1.2.x"
   },
   "engines": {
     "node": "0.8.x",

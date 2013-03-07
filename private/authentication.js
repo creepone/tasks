@@ -48,31 +48,25 @@ exports.device = {
 				{
 					_registerDevice({
 						name: req.query.device,
-						username: result.username
+						userId: result._id
 					}, onRegistered);
 				}
 				else
 				{
-					// todo: return registration page (form with action /ios/register)
-					res.writeHead(200);
-
-					res.write('<!doctype html><html><body><form method="POST" action="/ios/register">');
-					res.write('<input name="openid" type="hidden" value="' + req.query.openid +  '" />');
-					res.write('<input name="claimedIdentifier" type="hidden" value="' + claimedIdentifier +  '" />');
-					res.write('<input name="device" type="hidden" value="' + req.query.device +'" />');
-					res.write('<input name="username" type="text" />');
-					res.write('<input type="submit" value="Register" />');
-					res.end('</body></html>');
+					res.render('ios/register', {
+						openid: req.query.openid,
+						claimedIdentifier: claimedIdentifier,
+						device: req.query.device
+					});
 				}
 			});
 		});
 
 		function onRegistered(error, result)
 		{
-			res.writeHead(200);
-
-			var tokenUrl = 'http://done?' + querystring.stringify({ token: result.token, username: result.username });
-			res.end('<!doctype html><html><head><script> window.onload=function() { document.location.href = "' + tokenUrl + '" } </script></head></html>');
+			res.render('ios/redirect', {
+				url: 'http://done?' + querystring.stringify({ token: result.token })
+			});
 		}
 	},
 	
@@ -82,10 +76,7 @@ exports.device = {
 	*/
 	register: function (req, res)
 	{
-		// todo: sanity check for the username, reject anything that's not alphanumeric
-		
 		var o = {
-			username: req.body.username,
 			openid: req.body.claimedIdentifier
 		};
 
@@ -119,7 +110,5 @@ function _registerDevice(o, callback)
 
 function _reportError(res)
 {
-	// todo: show error page
-	res.writeHead(200);
-	res.end('Authentication failed');
+	res.render('ios/error', { url: 'http://error' });
 }

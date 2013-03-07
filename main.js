@@ -1,10 +1,19 @@
-var express = require('express');
+var express = require('express'),
+	consolidate = require('consolidate'),
+	authentication = require('./private/authentication');
+	
 var app = express();
 
-var authentication = require('./private/authentication');
+app.engine('dust', consolidate.dust);
 
-app.use(express.bodyParser());
-app.use(express.static(__dirname + '/public'));
+app.configure(function () {
+	app.set('view engine', 'dust');
+	app.set('views', __dirname + '/views');
+	
+	app.use(express.bodyParser());
+	app.use(app.router);
+	app.use(express.static(__dirname + '/public'));
+});
 
 app.get('/ios/authenticate', authentication.device.authenticate);
 app.get('/ios/verify', authentication.device.verify);
