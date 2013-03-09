@@ -3,7 +3,7 @@ var openid = require('openid'),
 	uuid = require('node-uuid'),
 	db = require('./db');
 	
-var realm = "http://*.iosapps.at";
+var realm = process.env.OPENID_REALM;
 
 exports.device = {
 	/*
@@ -99,11 +99,23 @@ exports.device = {
 
 exports.web = {
 	/*
-		Handler for the web auth-info request. Simply sends back the info whether the current session is authenticated.
+		Handler for the web auth-info request. Sends back the info whether the current session is authenticated.
 	*/
 	getInfo: function (req, res)
 	{
-		return _returnObject({ logged: !!req.session.openid }, res);
+		return _returnObject({ logged: !!req.session.openid, name: req.session.username }, res);
+	},
+	
+	/*
+		Handler for the web logout request. Kills the user session.
+	*/
+	logout: function(req, res)
+	{
+		req.session.destroy(function(error) {
+		  	if (error)
+				return _returnObject({ error: error }, res);
+			return _returnObject({}, res);
+		});
 	},
 	
 	/*
@@ -151,6 +163,8 @@ exports.web = {
 				if (result)
 				{
 					req.session.openid = claimedIdentifier;
+					req.session.username = result.name;
+					
 					res.writeHead(302, { Location: "/" });
 					res.end();
 				}

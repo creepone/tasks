@@ -22,6 +22,7 @@ app.get('/ios/verify', authentication.device.verify);
 app.post('/ios/register', authentication.device.register);
 
 app.get('/auth-info', authentication.web.getInfo);
+app.get('/logout', authentication.web.logout);
 app.get('/authenticate', authentication.web.authenticate);
 app.get('/verify', authentication.web.verify);
 app.post('/register', authentication.web.register);

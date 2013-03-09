@@ -1,46 +1,36 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="utf-8">
-		<title>Registration Page</title>
-		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
-
-	  	<link rel="stylesheet" href="/ios/css/ratchet.css">
-	  	<script src="/ios/js/ratchet.js"></script>
+		<title>Tasks Registration</title>
+		
 		<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-		<script>
-			$(function() {
-				$("a").click(function(evt) {
-					if (!$(this).hasClass("disabled") && !$("form").hasClass("submitted")) {
-						$("form").addClass("submitted").submit();
-					}
-					evt.preventDefault();
-				});
-				
-				$("input[name='name']").keyup(function() {
-					var val = $(this).val().replace(/\s/g, "");
-					$("a").toggleClass("disabled", !val);
-				});
-			});
-		</script>
-		<style>
-			a.disabled {
-				opacity: 0.5;
-			}
-		</style>
+		<script src="/js/lib/URI.min.js"></script>
+		<script src="/js/lib/bootstrap.min.js"></script>
+		<script src="/js/register.js"></script>
+		
+		<link rel="stylesheet" href="/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="/css/font-awesome.min.css" />
+		<link rel="stylesheet" href="/css/register.css" />
 	</head>
 	<body>
-		<div class="content">
-			<div class="content-padded">
-				<div class="content-padded">
-					We didn't find your user in our records. <br />
-					Enter your name to register.
-				</div>
+		<div class="navbar navbar-inverse navbar-fixed-top">
+	      <div class="navbar-inner">
+	        <div class="container-fluid">
+	          <div class="brand">Tasks</div>
+	        </div>
+	      </div>
+	    </div>
+	
+		<div class="container">
+			<p class="lead">Looks like you are using Tasks for the first time.</p>
+			<p>Enter your name to register.</p>
+			
+			<div class="controls input-append">		
 				<form method="POST" action="/register">
 					<input name="name" type="text" placeholder="Full name" />
 					<input name="openid" type="hidden" value="{openid}" />
 					<input name="claimedIdentifier" type="hidden" value="{claimedIdentifier}" />
-					<a href="#" class="button-main button-block disabled">Register</a>
+					<button type="submit" class="btn btn-primary" disabled>Register</button>
 				</form>
 			</div>
 		</div>

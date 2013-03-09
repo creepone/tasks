@@ -3,8 +3,27 @@
 	<head>
 		<title>Tasks</title>
 		<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+		<script src="/js/lib/URI.min.js"></script>
+		<script src="/js/lib/bootstrap.min.js"></script>
 		<script src="/js/index.js"></script>
+		
+		<link rel="stylesheet" href="/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="/css/font-awesome.min.css" />
+		<link rel="stylesheet" href="/css/index.css" />
 	</head>
 	<body>
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="navbar-inner">
+				<div class="container-fluid">
+		        	<div class="brand">Tasks</div>
+					<a id="logout" class="pull-right" href="#"><i class="icon-eject"></i></a>
+					<p id="username" class="navbar-text pull-right"></p>
+		        </div>
+			</div>
+	    </div>
+	
+	    <div class="container">
+			<div id="alert" />
+		</div>
 	</body>
 </html>

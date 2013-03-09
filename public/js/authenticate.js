@@ -110,7 +110,11 @@
 	
 	function _reportError(error)
 	{
-		// todo: show error notification
+		$("#alert").html("<div class=\"alert alert-error fade in\">" +
+		  "<button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>" +
+		  "Error occured when communicating with the server. </div>");
+		
+		setTimeout(function () { $("#alert .alert").alert("close"); }, 2000);
 		console.log(error);
 	}
 	
