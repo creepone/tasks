@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Tasks Authentication</title>
+		<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+		<script src="/js/lib/URI.min.js"></script>
+		<script src="/js/lib/bootstrap.min.js"></script>
+		<script src="/js/authenticate.js"></script>
+		
+		<link rel="stylesheet" href="/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="/css/bootstrap-responsive.min.css" />
+		<link rel="stylesheet" href="/css/font-awesome.min.css" />
+		<link rel="stylesheet" href="/css/authenticate.css" />
+	</head>
+	<body>
+		<div class="navbar navbar-inverse navbar-fixed-top">
+	      <div class="navbar-inner">
+	        <div class="container-fluid">
+	          <div class="brand">Tasks</div>
+	        </div>
+	      </div>
+	    </div>
+	
+	    <div class="container">
+			<p class="lead">To use Tasks, you need to sign in or sign up with an OpenID provider.</p>
+			<div class="btn-group">
+				<button class="btn btn-large" data-provider="google"><img src="/img/openid-google.png" /></button>
+				<button class="btn btn-large" data-provider="yahoo"><img src="/img/openid-yahoo.png" /></button>
+				<button class="btn btn-large" data-provider="aol"><img src="/img/openid-aol.png" /></button>
+				<button class="btn btn-large" data-provider="myopenid"><img src="/img/openid-myopenid.png" /></button>
+				<button class="btn btn-large" data-provider="openid"><img src="/img/openid.png" /></button>
+			</div>
+			
+			<div class="controls input-append with-account">
+				<form>
+					<input class="span3" type="text" id="account" name="account" placeholder="Enter your id" />
+					<button class="btn btn-primary">Login</button>
+				</form>
+			</div>
+			
+			<div id="loader">
+				<div class="well well-transparent lead text-center">
+				     <i class="icon-spinner icon-spin icon-2x"></i>
+				 </div>
+			</div>
+		</div>
+	</body>
+</html>

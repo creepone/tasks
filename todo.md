@@ -1,3 +1,6 @@
-* todos in code
-* implement authentication and identity acquiring for web
-* authentication handler for all the requests => how to integrate
+* check the problem with claimed identifier not being unique -> is this really the case ?
+
+* error.html -> implement some simple page, try out
+* register.dust -> adapt to web standards
+
+* just some mockup with the name on the right for the main page

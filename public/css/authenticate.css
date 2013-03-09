@@ -1,0 +1,18 @@
+body {
+  padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+}
+
+button[data-provider] {
+	width: 140px;
+	height:61px;
+}
+
+.with-account {
+	margin-top: 30px;	
+	display: none;
+}
+
+#loader {
+	margin-top: 30px;	
+	display: none;
+}

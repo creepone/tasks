@@ -81,6 +81,7 @@ This is only done for devices, the web clients have to poll for the changes them
 ##### User
 
     {  _id: "4c2209fef3924d31102bd84b",
+	   name: "Tomas Vana",
        openid: "https://www.google.com/accounts/o8/id?id=..."
     }
     

@@ -36,11 +36,10 @@
 					We didn't find your user in our records. <br />
 					Enter your name to register.
 				</div>
-				<form method="POST" action="/ios/register">
+				<form method="POST" action="/register">
 					<input name="name" type="text" placeholder="Full name" />
 					<input name="openid" type="hidden" value="{openid}" />
 					<input name="claimedIdentifier" type="hidden" value="{claimedIdentifier}" />
-					<input name="device" type="hidden" value="{device}" />
 					<a href="#" class="button-main button-block disabled">Register</a>
 				</form>
 			</div>
