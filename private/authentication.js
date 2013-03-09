@@ -157,8 +157,10 @@ exports.web = {
 
 			db.findUser({ openid: claimedIdentifier }, function (error, result) 
 			{
-				if (error)
-					return _returnObject({ error: error }, res);
+				if (error) {
+					res.writeHead(302, { Location: "/error.html" });
+					res.end();
+				}
 
 				if (result)
 				{
