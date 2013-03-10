@@ -7,7 +7,7 @@ simple task manager with iOS and a web client
  
 ### Technology (research)
 
-node.js, MongoDB, IndexedDB, Apple Push Notifications, OpenID, [ratchet](http://maker.github.com/ratchet/), [openid-selector](http://code.google.com/p/openid-selector/), [keychainutils](http://gorgando.com/blog/tag/sfhfkeychainutils), [dust](http://akdubya.github.com/dustjs/)
+node.js, MongoDB, IndexedDB, Apple Push Notifications, OpenID, [ratchet](http://maker.github.com/ratchet/), [openid-selector](http://code.google.com/p/openid-selector/), [keychainutils](http://gorgando.com/blog/tag/sfhfkeychainutils), [dust](http://akdubya.github.com/dustjs/), [tapku](https://github.com/devinross/tapkulibrary)
 
 ### Design Notes
 
