@@ -20,5 +20,4 @@
 * sync and merge logic
 
 ### Bugs
-* losing identity on restart of iOS app -> maybe the old version ?
 * icons frequently missing in web -> maybe don't use this font lib ?
