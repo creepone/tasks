@@ -18,6 +18,3 @@
 * IndexedDB research
 * basic UI for creating and editing the tasks
 * sync and merge logic
-
-### Bugs
-* icons frequently missing in web -> maybe don't use this font lib ?
