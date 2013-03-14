@@ -8,9 +8,9 @@
 		<script src="/js/lib/bootstrap.min.js"></script>
 		<script src="/js/register.js"></script>
 		
-		<link rel="stylesheet" href="/style/bootstrap.min.css" />
-		<link rel="stylesheet" href="/style/font-awesome.min.css" />
-		<link rel="stylesheet" href="/style/register.css" />
+		<link rel="stylesheet" href="/styles/bootstrap.min.css" />
+		<link rel="stylesheet" href="/styles/font-awesome.min.css" />
+		<link rel="stylesheet" href="/styles/register.css" />
 	</head>
 	<body>
 		<div class="navbar navbar-inverse navbar-fixed-top">
