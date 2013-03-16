@@ -20,13 +20,13 @@ node.js, MongoDB, IndexedDB, Apple Push Notifications, OpenID, [ratchet](http://
 	   categories: ["low", "work"],
 	   done: false,
 	   reminder: { 
-		 type: "discrete",
+		 important: true,
          time: "2012-12-28T06:15:33.035Z"
        },
 	   timestamp: 0x13d22abeb32	// client timestamp of the last applied patch
     }
 
-For the reminder there is type `"discrete"` (badges on app and in web) and `"important"` (chrome desktop notification and alert with sound on the device). On the device, local notifications are used by default. In case the task was created / changed and not yet synchronized with the device, push notifications are used.
+If the reminder is set to be important, we use chrome desktop notification and alert with sound on the device, otherwise only badges on app and in web are used . On the device, local notifications are used by default. In case the task was created / changed and not yet synchronized with the device, push notifications are used.
 
 ##### Patch
 
