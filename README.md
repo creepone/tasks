@@ -18,7 +18,6 @@ node.js, MongoDB, IndexedDB, Apple Push Notifications, OpenID, [ratchet](http://
 	   name: "Do something",
 	   notes: "Elaborate on what you do",
 	   categories: ["low", "work"],
-	   done: false,
 	   reminder: { 
 		 important: true,
          time: "2012-12-28T06:15:33.035Z"
@@ -45,7 +44,6 @@ If the reminder is set to be important, we use chrome desktop notification and a
 		   $add: ["high"],
            $remove: ["home"]
          }
-         done: true,
          reminder: {
 		   time: null
          }
