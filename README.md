@@ -22,7 +22,7 @@ node.js, MongoDB, IndexedDB, Apple Push Notifications, OpenID, [ratchet](http://
 		 important: true,
          time: "2012-12-28T06:15:33.035Z"
        },
-	   timestamp: 0x13d22abeb32	// client timestamp of the last applied patch
+	   lastClientPatchId: ObjectId("4c2209fef3924d31102bdabc")	// client id of the last applied patch
     }
 
 If the reminder is set to be important, we use chrome desktop notification and alert with sound on the device, otherwise only badges on app and in web are used . On the device, local notifications are used by default. In case the task was created / changed and not yet synchronized with the device, push notifications are used.
@@ -33,7 +33,7 @@ If the reminder is set to be important, we use chrome desktop notification and a
 	   userId: ObjectId("4c2209fef3924d31102bd84b"),
        taskId: "3c8d8095-0a0c-4079-8625-a97378bb3b84",	// id of the edited task
 	   deviceId: ObjectId("4c2209fef3924d31102bd84c"),	// device that submitted the patch (optional)
-	   clientTimestamp: 0x13d22abeb32,	// timestamp of client creation
+	   clientPatchId: ObjectId("4c2209fef3924d31102bdabc"),	// client-generated BSON object-id
 	   operation: "edit",	// add, edit, remove
 	   body: { 
 	     name: {
