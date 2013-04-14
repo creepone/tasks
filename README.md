@@ -1,5 +1,7 @@
 # Tasks
 
+*The work on this project has been suspended for now as [Wunderlist](http://www.wunderlist.com) seems to be a viable alternative.*
+
 simple task manager with iOS and a web client
 
 * sync with automatic conflict resolution and full history
