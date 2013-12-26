@@ -1,0 +1,18 @@
+doctype html
+html
+  head
+    script(src="http://code.jquery.com/jquery-1.9.1.min.js")
+    script(src="/js/lib/URI.min.js")
+    script(src="/js/lib/bootstrap.min.js")
+    link(rel="stylesheet",href="/styles/bootstrap.min.css")
+    block head
+
+  body
+    .navbar.navbar-inverse.navbar-fixed-top
+      .navbar-inner
+        .container-fluid
+          .brand Tasks
+          block header-content
+
+    .container
+      block content

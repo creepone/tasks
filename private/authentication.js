@@ -1,7 +1,7 @@
-var openid = require('openid'),
-	querystring = require('querystring'),
-	uuid = require('node-uuid'),
-	db = require('./db');
+var openid = require("openid"),
+	querystring = require("querystring"),
+	uuid = require("node-uuid"),
+	db = require("./db");
 	
 var realm = process.env.OPENID_REALM;
 
@@ -41,27 +41,25 @@ exports.device = {
 
 			var claimedIdentifier = result.claimedIdentifier;
 
-			db.findUser({ openid: claimedIdentifier }, function (error, result) 
-			{
-				if (error)
-					return _reportDeviceError(res);
-
-				if (result)
-				{
-					_registerDevice({
-						name: req.query.device,
-						userId: result._id
-					}, onRegistered);
-				}
-				else
-				{
-					res.render('ios/register', {
-						openid: req.query.openid,
-						claimedIdentifier: claimedIdentifier,
-						device: req.query.device
-					});
-				}
-			});
+            db.getUser({ openid: claimedIdentifier })
+                .then(function (result)
+                {
+                    if (result)
+                    {
+                        _registerDevice({
+                            name: req.query.device,
+                            userId: result._id
+                        }, onRegistered);
+                    }
+                    else
+                    {
+                        res.render('ios/register', {
+                            openid: req.query.openid,
+                            claimedIdentifier: claimedIdentifier,
+                            device: req.query.device
+                        });
+                    }
+                }, _reportDeviceError.bind(null, res));
 		});
 
 		function onRegistered(error, result)
@@ -83,27 +81,26 @@ exports.device = {
 			name: req.body.name
 		};
 
-		db.insertUser(o, function (error)
-		{
-			if (error)
-				return _reportDeviceError(res);
+        db.insertUser(o)
+            .then(function ()
+            {
+                // reauthenticate to acquire device id
+                var authenticateUrl = 'http://' + req.headers.host + '/ios/authenticate?' + querystring.stringify({ device: req.body.device, openid: req.body.openid });
 
-			// reauthenticate to acquire device id
-			var authenticateUrl = 'http://' + req.headers.host + '/ios/authenticate?' + querystring.stringify({ device: req.body.device, openid: req.body.openid });
+                res.writeHead(302, { Location : authenticateUrl });
+                res.end();
 
-			res.writeHead(302, { Location : authenticateUrl });
-			res.end();
-		});
+            }, _reportDeviceError.bind(null, res));
 	}
 }
 
 exports.web = {
 	/*
-		Handler for the web auth-info request. Sends back the info whether the current session is authenticated.
+		Handler for the web authentication info request. Sends back the info whether the current session is authenticated.
 	*/
-	getInfo: function (req, res)
+	info: function (req, res)
 	{
-		return _returnObject({ logged: !!req.session.openid, name: req.session.username }, res);
+        res.json({ logged: !!req.session.openid, name: req.session.username });
 	},
 	
 	/*
@@ -113,8 +110,8 @@ exports.web = {
 	{
 		req.session.destroy(function(error) {
 		  	if (error)
-				return _returnObject({ error: error }, res);
-			return _returnObject({}, res);
+                return res.json({ error: error });
+            res.json({});
 		});
 	},
 	
@@ -124,18 +121,18 @@ exports.web = {
 	authenticate: function (req, res)
 	{
 		if (req.session.openid)
-			return _returnObject({ logged: true }, res);
-		
-		var verifyUrl = 'http://' + req.headers.host + '/verify?'
+			return res.json({ logged: true });
+
+		var verifyUrl = 'http://' + req.headers.host + '/authenticate/verify?'
 			+ querystring.stringify({ openid: req.query.openid });
 		
 		var relyingParty = new openid.RelyingParty(verifyUrl, realm, false, false, []);
 		relyingParty.authenticate(req.query.openid, false, function(error, authUrl)
 		{
 			if (error || !authUrl)
-				return _returnObject({ error: error || true }, res);
+				return res.json({ error: error || true });
 
-			_returnObject({ url: authUrl }, res);
+			res.json({ url: authUrl });
 		});
 	},
 	
@@ -149,35 +146,35 @@ exports.web = {
 		relyingParty.verifyAssertion(req, function(error, result)
 		{
 			if (error || !result.authenticated) {
-				res.writeHead(302, { Location: "/error.html" });
+				res.writeHead(302, { Location: "/error" });
 				res.end();
 			}
 
 			var claimedIdentifier = result.claimedIdentifier;
 
-			db.findUser({ openid: claimedIdentifier }, function (error, result) 
-			{
-				if (error) {
-					res.writeHead(302, { Location: "/error.html" });
-					res.end();
-				}
+            db.getUser({ openid: claimedIdentifier })
+                .then(function (result)
+                {
+                    if (result)
+                    {
+                        req.session.openid = claimedIdentifier;
+                        req.session.username = result.name;
 
-				if (result)
-				{
-					req.session.openid = claimedIdentifier;
-					req.session.username = result.name;
-					
-					res.writeHead(302, { Location: "/" });
-					res.end();
-				}
-				else
-				{
-					res.render('register', {
-						openid: req.query.openid,
-						claimedIdentifier: claimedIdentifier
-					});
-				}
-			});
+                        res.writeHead(302, { Location: "/" });
+                        res.end();
+                    }
+                    else
+                    {
+                        res.render('register', {
+                            openid: req.query.openid,
+                            claimedIdentifier: claimedIdentifier
+                        });
+                    }
+                },
+                function () {
+                    res.writeHead(302, { Location: "/error" });
+                    res.end();
+                });
 		});
 	},
 	
@@ -192,18 +189,25 @@ exports.web = {
 			name: req.body.name
 		};
 
-		db.insertUser(o, function (error)
-		{
-			if (error) {
-				res.writeHead(302, { Location: "/error.html" });
-				res.end();
-			}
-			
-			var authenticateUrl = '/authenticate.html?' + querystring.stringify({ openid: req.body.openid });
-			res.writeHead(302, { Location: authenticateUrl });
-			res.end();
-		});
-	}
+        db.insertUser(o)
+            .then(function() {
+                var authenticateUrl = '/authenticate/init?' + querystring.stringify({ openid: req.body.openid });
+                res.writeHead(302, { Location: authenticateUrl });
+                res.end();
+            },
+            function (){
+                res.writeHead(302, { Location: "/error" });
+                res.end();
+            });
+	},
+
+    /*
+        Renders the authentication web page.
+     */
+    render: function (req, res)
+    {
+        res.render("authenticate");
+    }
 }
 
 // helper methods
@@ -211,19 +215,9 @@ exports.web = {
 function _registerDevice(o, callback)
 {	
 	o.token = uuid.v4();
-	
-	db.insertDevice(o, function (err) {
-		if (err)
-			return callback(err);
-			
-		callback(null, o);
-	});
-}
 
-function _returnObject(o, res)
-{
-	res.writeHead(200, { "Content-Type": "text/json" });
-	res.end(JSON.stringify(o));
+    db.insertDevice(o)
+        .then(callback.bind(null, null, o), callback);
 }
 
 function _reportDeviceError(res)

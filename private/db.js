@@ -1,31 +1,32 @@
-var _ = require('underscore'),
-	mongodb = require('mongodb');
+var _ = require("underscore"),
+	mongodb = require("mongodb"),
+    Q = require("q");
 
 _.extend(exports, {
 	/*
 		Queries the database for the user with properties specified in o.
 	*/
-	findUser: function(o, callback)
+	getUser: function(o)
 	{
-		_ensureCollection("users", function (err, users) {
-			if (err)
-				return callback(err);
-
-			users.findOne(o, callback);
-		});
+        return _getCollection("users")
+          .then(function (users) {
+                var deferred = Q.defer();
+                users.findOne(o, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
 	},
 
 	/*
 		Inserts the given user into the database.
 	*/
-	insertUser: function(o, callback)
+	insertUser: function(o)
 	{
-		_ensureCollection("users", function (err, users) {
-			if (err)
-				return callback(err);
-
-			users.insert(o, { w: 1 }, callback);
-		});
+        return _getCollection("users")
+          .then(function (users) {
+                var deferred = Q.defer();
+                users.insert(o, { w : 1 }, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
 	},
 
 	/*
@@ -33,40 +34,39 @@ _.extend(exports, {
 	*/
 	insertDevice: function(o, callback)
 	{
-		_ensureCollection("devices", function (err, devices) {
-			if (err)
-				return callback(err);
-
-			devices.insert(o, { w: 1 }, callback);
-		});
+        return _getCollection("devices")
+          .then(function (devices) {
+                var deferred = Q.defer();
+                devices.insert(o, { w: 1 }, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
 	}
 });
 
 var _db;
-function _ensureDb(callback)
+function _getDb()
 {
-	if (_db)
-		return callback(null, _db);
-	
-	mongodb.Db.connect(process.env.MONGOHQ_URL || 'mongodb://localhost', function(err, db) {
-		if (err) 
-			return callback(err);
-		_db = db;
-		callback(null, db);
-	});
+    var deferred = Q.defer();
+
+    if (_db)
+        deferred.resolve(_db);
+
+    mongodb.Db.connect(process.env.MONGOHQ_URL || 'mongodb://localhost/local', function(err, db) {
+        if (err) return deferred.reject(new Error(err));
+
+        _db = db;
+        deferred.resolve(db);
+    });
+
+   return deferred.promise;
 }
 
-function _ensureCollection(collectionName, callback)
+function _getCollection(name)
 {
-	_ensureDb(function (err, db) {
-		if (err)
-			return callback(err);
-			
-		db.collection(collectionName, function (err, collection) {
-			if (err)
-				return callback(err);
-			
-			callback(null, collection);
-		})
-	})
+    return _getDb()
+      .then(function (db) {
+            var deferred = Q.defer();
+            db.collection(name, deferred.makeNodeResolver());
+            return deferred.promise;
+        });
 }

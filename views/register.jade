@@ -1,0 +1,17 @@
+extends layout
+
+block head
+  title Tasks Registration
+  script(src="/js/register.js")
+  link(rel="stylesheet",href="/styles/register.css")
+
+block content
+  p.lead Looks like you are using Tasks for the first time.
+  p Enter your name to register.
+
+  .controls.input-append
+    form(method="POST",action="/register")
+      input(name="name",type="text",placeholder="Full name")
+      input(name="openid",type="hidden",value=openid)
+      input(name="claimedIdentifier",type="hidden",value=claimedIdentifier)
+      button.btn.btn-primary(type="submit",disabled) Register

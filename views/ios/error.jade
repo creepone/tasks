@@ -1,0 +1,15 @@
+extends layout
+
+block head
+  title Error page
+  script.url(type="text/json")!= url
+  script.
+    $(function() {
+        var url = $(".url").html();
+        $("a").click(function() { document.location.href = url });
+     });
+
+block content
+  .content-padded
+    | Unfortunately there was an error while trying to authenticate. Try again later or choose a different provider.
+  a.button-main.button-block Dismiss

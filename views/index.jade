@@ -1,0 +1,13 @@
+extends layout
+
+block head
+  title Tasks
+  script(src="/js/index.js")
+  link(rel="stylesheet",href="/styles/index.css")
+
+block header-content
+  a#logout.pull-right(href="#"): i.icon-eject.icon-white
+  p#username.navbar-text.pull-right
+
+block content
+  #alert

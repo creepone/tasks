@@ -3,7 +3,7 @@
 	$(function() {		
 		_getAuthInfo(function (res) {
 			if (!res.logged)
-				window.location.href = '/authenticate.html';
+				window.location.href = '/authenticate';
 		
 			$("#logout").show().click(_logout);
 			$("#username").text(res.name);
@@ -16,7 +16,7 @@
 	{
 		$.ajax({
 		    type: "GET",
-		    url: "/auth-info",
+		    url: "/authenticate/info",
 		    dataType: "json",
 		    success: function(data) {
 				if (data.error)

@@ -1,0 +1,6 @@
+doctype html
+html
+  head
+    script.url(type="text/json")!= url
+    script.
+      window.onload=function() { document.location.href = document.getElementsByClassName("url")[0].innerHTML; }

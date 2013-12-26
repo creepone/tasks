@@ -1,0 +1,34 @@
+extends layout
+
+block head
+    title Registration page
+    script.
+      $(function() {
+          $("a").click(function(evt) {
+              if (!$(this).hasClass("disabled") && !$("form").hasClass("submitted")) {
+                  $("form").addClass("submitted").submit();
+              }
+              evt.preventDefault();
+          });
+
+          $("input[name='name']").keyup(function() {
+              var val = $(this).val().replace(/\s/g, "");
+              $("a").toggleClass("disabled", !val);
+          });
+      });
+    style.
+      a.disabled {
+        opacity: 0.5;
+      }
+
+block content
+  .content-padded
+    | We didn't find your user in our records.
+    br
+    | Enter your name to register.
+  form(method="POST",action="/ios/register")
+    input(name="name",type="text",placeholder="Full name")
+    input(name="openid",type="hidden",value=openid)
+    input(name="claimedIdentifier",type="hidden",value=claimedIdentifier)
+    input(name="device",type="hidden",value=device)
+    a.button-main.button-block.disabled(href="#") Register

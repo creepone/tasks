@@ -1,8 +1,0 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<script> 
-			window.onload=function() { document.location.href = "{url|s}" }
-		</script>
-	</head>
-</html>

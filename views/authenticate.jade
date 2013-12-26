@@ -1,0 +1,26 @@
+extends layout
+
+block head
+    title Tasks Authentication
+    script(src="/js/authenticate.js")
+    link(rel="stylesheet",href="/styles/authenticate.css")
+
+block content
+    #alert
+
+    p.lead To use Tasks, you need to sign in or sign up with an OpenID provider.
+    .btn-group
+      button.btn.btn-large(data-provider="google"): img(src="/img/openid-google.png")
+      button.btn.btn-large(data-provider="yahoo"): img(src="/img/openid-yahoo.png")
+      button.btn.btn-large(data-provider="aol"): img(src="/img/openid-aol.png")
+      button.btn.btn-large(data-provider="myopenid"): img(src="/img/openid-myopenid.png")
+      button.btn.btn-large(data-provider="openid"): img(src="/img/openid.png")
+
+    .controls.input-append.with-account
+      form
+        input#account.span3(type="text",name="account",placeholder="Enter your id")
+        button.btn.btn-primary Login
+
+    #loader
+      .well.well-transparent.lead.text-center
+        img(src="../img/spinner.gif")

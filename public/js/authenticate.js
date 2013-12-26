@@ -11,7 +11,7 @@
 		else {
 			_getAuthInfo(function (res) {
 				if (res.logged)
-					window.location.href = '/index.html';
+					window.location.href = '/';
 			});
 		}
 
@@ -66,7 +66,7 @@
 		
 		_authenticate({ provider: provider}, function (res) {
 			if (res.logged)
-				window.location.href = '/index.html';
+				window.location.href = '/';
 			
 			if (res.url)
 				window.location.href = res.url;
@@ -77,7 +77,7 @@
 	{
 		$.ajax({
 		    type: "GET",
-		    url: "/auth-info",
+		    url: "/authenticate/info",
 		    dataType: "json",
 		    success: function(data) {
 				if (data.error)
@@ -91,7 +91,7 @@
 	
 	function _authenticate(o, callback)
 	{
-		var url = URI('/authenticate').addSearch({ openid: o.provider }).toString();
+		var url = URI('/authenticate/init').addSearch({ openid: o.provider }).toString();
 		
 		$.ajax({
 		    type: "GET",
