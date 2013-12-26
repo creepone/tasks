@@ -16,6 +16,45 @@ _.extend(exports, {
             });
 	},
 
+    /*
+        Queries the database for the device with properties specified in o.
+    */
+    getDevice: function(o)
+    {
+        return _getCollection("devices")
+            .then(function (devices) {
+                var deferred = Q.defer();
+                devices.findOne(o, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
+
+    /*
+     Queries the database for the patch with properties specified in o.
+     */
+    getPatch: function(o)
+    {
+        return _getCollection("patches")
+            .then(function (patches) {
+                var deferred = Q.defer();
+                patches.findOne(o, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
+
+    /*
+     Queries the database for the patches using the condition specified in o.
+     */
+    findPatches: function(o)
+    {
+        return _getCollection("patches")
+            .then(function (patches) {
+                var deferred = Q.defer();
+                patches.find(o, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
+
 	/*
 		Inserts the given user into the database.
 	*/
@@ -40,7 +79,20 @@ _.extend(exports, {
                 devices.insert(o, { w: 1 }, deferred.makeNodeResolver());
                 return deferred.promise;
             });
-	}
+	},
+
+    /*
+     Inserts the given patch into the database.
+     */
+    insertPatch: function(o, callback)
+    {
+        return _getCollection("patches")
+            .then(function (patches) {
+                var deferred = Q.defer();
+                patches.insert(o, { w: 1 }, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    }
 });
 
 var _db;

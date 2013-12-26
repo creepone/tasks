@@ -1,10 +1,12 @@
 var authentication = require("./authentication"),
+    sync = require("./sync"),
     index = require("./controllers/index");
 
 exports.init = function (app) {
     app.get("/ios/authenticate", authentication.device.authenticate);
     app.get("/ios/verify", authentication.device.verify);
     app.post("/ios/register", authentication.device.register);
+    app.post("/ios/sync", sync.device.sync);
 
     app.get("/", index.render);
     app.get("/authenticate", authentication.web.render);

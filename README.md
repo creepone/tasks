@@ -43,8 +43,8 @@ If the reminder is set to be important, we use chrome desktop notification and a
            new: "Do something new" 
 	     },
          categories: {
-		   $add: ["high"],
-           $remove: ["home"]
+		   add: ["high"],
+           remove: ["home"]
          }
          reminder: {
 		   time: null
