@@ -27,7 +27,7 @@ node.js, MongoDB, IndexedDB, Apple Push Notifications, OpenID, [ratchet](http://
 	   lastClientPatchId: ObjectId("4c2209fef3924d31102bdabc")	// client id of the last applied patch
     }
 
-If the reminder is set to be important, we use chrome desktop notification and alert with sound on the device, otherwise only badges on app and in web are used . On the device, local notifications are used by default. In case the task was created / changed and not yet synchronized with the device, push notifications are used.
+If the reminder is set to be important, we use chrome desktop notification and alert with sound on the device, otherwise only badges on app and in web are used. On the device, local notifications are used.
 
 ##### Patch
 
@@ -52,7 +52,7 @@ If the reminder is set to be important, we use chrome desktop notification and a
        }
 	}
 
-Patches are submitted from all clients. When requesting sync data, a client sends the latest patch id he got and gets all the patches submitted later.
+Patches are submitted from all clients. When requesting sync data, a client sends the latest patch id he got and gets all the patches submitted later (with the exception of out-of-order patches, see Syncing).
 
 The current set of tasks can always be reconstructed from the **complete** set of patches. However, when a patch is being applied, only for some tasks a history has to be traversed again. If the client timestamp of the patch is higher than the timestamp of the current version, it can simply be applied on the top of it.
 
@@ -64,6 +64,7 @@ The current set of tasks can always be reconstructed from the **complete** set o
        token: "3c8d8095-0a0c-4079-8625-a97378bb3b86", // authentication token
        apnToken: "9a22f500824611e29e960800200c9a66", // updated on each startup of the app
        version: ObjectId("4c2209fef3924d31102bd84a") // last patch id that was sent to this device
+       toSync: [ObjectId("4c2209fef3924d31102bd123"), ObjectId("4c2209fef3924d31102bd124")] // array of out-of-order patch ids that haven't been sent to this device yet
     }
 
 ##### User
@@ -81,15 +82,15 @@ server. Client stores this in the keychain and uses to authenticate for all the 
 
 In the browser, the authentication has to be performed each time (unless there is a cookie for an already authenticated session).
 
-##### Reminder
+##### Syncing
 
-    {  _id: ObjectId("4c2209fef3924d31102bd84e"),
-	   deviceId: ObjectId("4c2209fef3924d31102bd84c"),
-	   taskId: "3c8d8095-0a0c-4079-8625-a97378bb3b84",
-	   time: "2012-12-28T06:15:33.035Z",
-	   patchId: ObjectId("4c2209fef3924d31102bd84a") // id of the patch that changed this task
-	}
+In the regular case, the process of syncing is as simple as exchanging the patches between the client and the server. However, there are some special cases to be taken care of. 
 
-On the server, there is a list of pending **important** reminders for the clients that are out-of-date. Each time a new set of patches is submitted and merged, we generate records for the added and modified reminders. As soon as the reminder's time is reached, we check whether the device still didn't get the corresponding patch and send him a push notification.
+When a device starts the sync, it sends the list of patches that it generated since the last sync (state = Local). The server takes each patch, compares its timestamp with the version of each device to determine whether it will be sent with the next batch, or it has to be explicitly marked as out-of-order. It saves the patch to the database and applies it onto the server tasks (this can be done asynchronously as the device doesn't have to wait for the result).
 
-This is of course only done for devices, the web clients have to poll for the changes themselves.
+Then the server retrieves a list of patches to be sent to the device, based on its version and the list of out-of-order patches. It sends them as a response to the initial request. 
+
+As the next step, the device applies all the received patches onto its tasks, resolving merge conflicts if necessary and sends the server an acknowledgment with the new version (chronologically last patch id that the client now has) and the list of received out-of-order patches. The server updates this info in the device record.
+
+
+
