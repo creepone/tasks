@@ -43,6 +43,32 @@ _.extend(exports, {
     },
 
     /*
+     Queries the database for the task with properties specified in o.
+     */
+    getTask: function(o)
+    {
+        return _getCollection("tasks")
+            .then(function (tasks) {
+                var deferred = Q.defer();
+                tasks.findOne(o, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
+
+    /*
+     Queries the database for the devices using the condition specified in o.
+     */
+    findDevices: function(o)
+    {
+        return _getCollection("devices")
+            .then(function (devices) {
+                var deferred = Q.defer();
+                devices.find(o, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
+
+    /*
      Queries the database for the patches using the condition specified in o.
      */
     findPatches: function(o)
@@ -51,6 +77,19 @@ _.extend(exports, {
             .then(function (patches) {
                 var deferred = Q.defer();
                 patches.find(o, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
+
+    /*
+     Queries the database for the tasks using the condition specified in o.
+     */
+    findTasks: function(o)
+    {
+        return _getCollection("tasks")
+            .then(function (tasks) {
+                var deferred = Q.defer();
+                tasks.find(o, deferred.makeNodeResolver());
                 return deferred.promise;
             });
     },
@@ -71,7 +110,7 @@ _.extend(exports, {
 	/*
 		Inserts the given device into the database.
 	*/
-	insertDevice: function(o, callback)
+	insertDevice: function(o)
 	{
         return _getCollection("devices")
           .then(function (devices) {
@@ -84,12 +123,64 @@ _.extend(exports, {
     /*
      Inserts the given patch into the database.
      */
-    insertPatch: function(o, callback)
+    insertPatch: function(o)
     {
         return _getCollection("patches")
             .then(function (patches) {
                 var deferred = Q.defer();
                 patches.insert(o, { w: 1 }, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
+
+    /*
+     Inserts the given task into the database.
+     */
+    insertTask: function(o)
+    {
+        return _getCollection("tasks")
+            .then(function (tasks) {
+                var deferred = Q.defer();
+                tasks.insert(o, { w: 1 }, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
+
+    /*
+     Updates the given device in the database.
+     */
+    updateDevice: function(device, o)
+    {
+        return _getCollection("devices")
+            .then(function(devices) {
+                var deferred = Q.defer();
+                devices.findAndModify(device, [], o, { w: 1 }, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
+
+    /*
+     Updates the given task in the database.
+     */
+    updateTask: function(task, o)
+    {
+        return _getCollection("tasks")
+            .then(function(tasks) {
+                var deferred = Q.defer();
+                tasks.findAndModify(task, [], o, { w: 1 }, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
+
+    /*
+     Deletes the given task in the database.
+     */
+    deleteTask: function(o)
+    {
+        return _getCollection("tasks")
+            .then(function (tasks) {
+                var deferred = Q.defer();
+                tasks.remove(o, { w: 1 }, deferred.makeNodeResolver());
                 return deferred.promise;
             });
     }

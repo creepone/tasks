@@ -1,7 +1,5 @@
 # Tasks
 
-*The work on this project has been suspended for now as [Wunderlist](http://www.wunderlist.com) seems to be a viable alternative.*
-
 simple task manager with iOS and a web client
 
 * sync with automatic conflict resolution and full history
@@ -86,7 +84,7 @@ In the browser, the authentication has to be performed each time (unless there i
 
 In the regular case, the process of syncing is as simple as exchanging the patches between the client and the server. However, there are some special cases to be taken care of. 
 
-When a device starts the sync, it sends the list of patches that it generated since the last sync (state = Local). The server takes each patch, compares its timestamp with the version of each device to determine whether it will be sent with the next batch, or it has to be explicitly marked as out-of-order. It saves the patch to the database and applies it onto the server tasks (this can be done asynchronously as the device doesn't have to wait for the result).
+When a device starts the sync, it sends the list of patches that it generated since the last sync (state = Local). The server takes each patch, compares its timestamp with the version of each device to determine whether it will be sent with the next batch, or it has to be explicitly marked as out-of-order. It saves the patch to the database and applies it onto the server tasks.
 
 Then the server retrieves a list of patches to be sent to the device, based on its version and the list of out-of-order patches. It sends them as a response to the initial request. 
 

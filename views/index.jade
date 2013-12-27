@@ -11,3 +11,15 @@ block header-content
 
 block content
   #alert
+
+  each task in tasks || []
+    h4.text-info.name= task.name
+
+    if task.reminder
+      -var time = new Date(task.reminder.time)
+      p: small.time(data-important=task.reminder.important)= time
+    each category in task.categories || []
+      span.label= category
+
+    pre: small= task.notes
+    hr

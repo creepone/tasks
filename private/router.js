@@ -7,6 +7,7 @@ exports.init = function (app) {
     app.get("/ios/verify", authentication.device.verify);
     app.post("/ios/register", authentication.device.register);
     app.post("/ios/sync", sync.device.sync);
+    app.post("/ios/sync/acknowledge", sync.device.acknowledge);
 
     app.get("/", index.render);
     app.get("/authenticate", authentication.web.render);

@@ -159,6 +159,7 @@ exports.web = {
                     {
                         req.session.openid = claimedIdentifier;
                         req.session.username = result.name;
+                        req.session.userId = result._id;
 
                         res.writeHead(302, { Location: "/" });
                         res.end();
@@ -215,6 +216,7 @@ exports.web = {
 function _registerDevice(o, callback)
 {	
 	o.token = uuid.v4();
+    o.toSync = [];
 
     db.insertDevice(o)
         .then(callback.bind(null, null, o), callback);

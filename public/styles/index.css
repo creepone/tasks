@@ -7,3 +7,15 @@ body {
 	padding-top: 8px;
 	margin-left: 5px;
 }
+
+.time[data-important] {
+    font-weight: bold;
+}
+
+.label {
+    margin-right: 3px;
+}
+
+pre {
+    margin-top: 5px;
+}
