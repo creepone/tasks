@@ -193,22 +193,11 @@ _.extend(exports, {
     }
 });
 
-var _db;
 function _getDb()
 {
     var deferred = Q.defer();
-
-    if (_db)
-        deferred.resolve(_db);
-
-    mongodb.Db.connect(process.env.MONGOHQ_URL || 'mongodb://localhost/local', function(err, db) {
-        if (err) return deferred.reject(new Error(err));
-
-        _db = db;
-        deferred.resolve(db);
-    });
-
-   return deferred.promise;
+    mongodb.Db.connect(process.env.MONGOHQ_URL || 'mongodb://localhost/local', deferred.makeNodeResolver());
+    return deferred.promise;
 }
 
 function _getCollection(name)

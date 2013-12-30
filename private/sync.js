@@ -38,7 +38,6 @@ exports.device =
             .done(function (patches){
                 var patchesToClient = patches.map(function (p) {
                     var res = _.extend({}, p);
-                    delete res._id;
                     delete res.deviceId;
                     delete res.userId;
                     return res;
@@ -60,7 +59,7 @@ exports.device =
                     throw new Error("Device not found.");
 
                 var syncedIds = req.body.syncedIds.map(function (i) { return new ObjectID(i); });
-                var version = new ObjectID(req.body.lastPatchId);
+                var version = req.body.lastPatchId && new ObjectID(req.body.lastPatchId);
 
                 return db.updateDevice(
                 {
@@ -75,7 +74,8 @@ exports.device =
                 res.json({});
             },
             function (err) {
-                res.send(500);
+                console.log(err);
+                res.send({ error: "Could not acknowledge the sync." });
             });
 
     }
