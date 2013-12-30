@@ -21,5 +21,7 @@ block content
     each category in task.categories || []
       span.label= category
 
-    pre: small= task.notes
+    pre
+      if task.notes
+        small= task.notes
     hr

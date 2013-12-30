@@ -4,7 +4,7 @@ var _ = require("underscore"),
 
 _.extend(exports, {
 	/*
-		Queries the database for the user with properties specified in o.
+     Queries the database for the user with properties specified in o.
 	*/
 	getUser: function(o)
 	{
@@ -17,7 +17,7 @@ _.extend(exports, {
 	},
 
     /*
-        Queries the database for the device with properties specified in o.
+     Queries the database for the device with properties specified in o.
     */
     getDevice: function(o)
     {
@@ -58,40 +58,47 @@ _.extend(exports, {
     /*
      Queries the database for the devices using the condition specified in o.
      */
-    findDevices: function(o)
+    findDevices: function(o, settings)
     {
-        return _getCollection("devices")
+        var res = _getCollection("devices")
             .then(function (devices) {
                 var deferred = Q.defer();
                 devices.find(o, deferred.makeNodeResolver());
                 return deferred.promise;
             });
+
+        return _applyCursorSettings(res, settings);
     },
 
     /*
      Queries the database for the patches using the condition specified in o.
      */
-    findPatches: function(o)
+    findPatches: function(o, settings)
     {
-        return _getCollection("patches")
+        var res = _getCollection("patches")
             .then(function (patches) {
                 var deferred = Q.defer();
                 patches.find(o, deferred.makeNodeResolver());
                 return deferred.promise;
             });
+
+        return _applyCursorSettings(res, settings);
+
     },
 
     /*
      Queries the database for the tasks using the condition specified in o.
      */
-    findTasks: function(o)
+    findTasks: function(o, settings)
     {
-        return _getCollection("tasks")
+        var res = _getCollection("tasks")
             .then(function (tasks) {
                 var deferred = Q.defer();
                 tasks.find(o, deferred.makeNodeResolver());
                 return deferred.promise;
             });
+
+        return _applyCursorSettings(res, settings);
     },
 
 	/*
@@ -212,4 +219,36 @@ function _getCollection(name)
             db.collection(name, deferred.makeNodeResolver());
             return deferred.promise;
         });
+}
+
+function _applyCursorSettings(promise, settings)
+{
+    if (settings && settings.sort)
+        promise = promise.then(_sortCursor.bind(null, settings.sort));
+
+    if (settings && settings.lazy === false)
+        promise = promise.then(_iterateCursor);
+
+    return promise;
+}
+
+function _sortCursor(sortFields, cursor)
+{
+    var deferred = Q.defer();
+
+    if (sortFields.length == 0)
+        return cursor;
+    else if (sortFields.length == 1)
+        sortFields.push("asc");
+
+    sortFields.push(deferred.makeNodeResolver());
+    cursor.sort.apply(cursor, sortFields);
+    return deferred.promise;
+}
+
+function _iterateCursor(cursor)
+{
+    var deferred = Q.defer();
+    cursor.toArray(deferred.makeNodeResolver());
+    return deferred.promise;
 }

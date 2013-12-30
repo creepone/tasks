@@ -7,12 +7,7 @@ exports.render = function (req, res)
     if (!req.session.userId)
         return res.render("index");
 
-    db.findTasks({ userId: new ObjectID(req.session.userId) })
-        .then(function(cursor) {
-            var deferred = Q.defer();
-            cursor.toArray(deferred.makeNodeResolver());
-            return deferred.promise;
-        })
+    db.findTasks({ userId: new ObjectID(req.session.userId) }, { sort: [ "reminder.time" ], lazy: false })
         .then(function(tasks) {
             res.render("index", {
                 tasks: tasks

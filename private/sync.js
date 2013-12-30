@@ -18,12 +18,7 @@ exports.device =
                 device = foundDevice;
             })
             .then(function () {
-                return db.findDevices({ userId: device.userId })
-                    .then(function (cursor){
-                        var deferred = Q.defer();
-                        cursor.toArray(deferred.makeNodeResolver());
-                        return deferred.promise;
-                    });
+                return db.findDevices({ userId: device.userId }, { lazy: false });
             })
             .then(function (foundDevices) {
                 if (!foundDevices)
@@ -156,17 +151,7 @@ function _getDevicePatches(device)
     // send all the patches submitted later
     conditions.push(query);
 
-    return db.findPatches({ $or: conditions })
-        .then(function (cursor) {
-            var deferred = Q.defer();
-            cursor.sort("clientPatchId", "asc", deferred.makeNodeResolver());
-            return deferred.promise;
-        })
-        .then(function (cursor) {
-            var deferred = Q.defer();
-            cursor.toArray(deferred.makeNodeResolver());
-            return deferred.promise;
-        });
+    return db.findPatches({ $or: conditions }, { sort: ["clientPatchId"], lazy: false });
 }
 
 function _mergePatches(patches)
@@ -196,12 +181,7 @@ function _mergePatches(patches)
             if (query.$or.length == 0)
                 return [];
 
-            return db.findTasks(query)
-                .then(function (cursor) {
-                    var deferred = Q.defer();
-                    cursor.toArray(deferred.makeNodeResolver());
-                    return deferred.promise;
-                });
+            return db.findTasks(query, { lazy: false });
         })
         .then(function (tasks){
             tasks.forEach(function (task) {
@@ -371,17 +351,7 @@ function _mergePatches(patches)
 
         var patches;
 
-        return db.findPatches({ taskId: task._id })
-            .then(function (cursor) {
-                var deferred = Q.defer();
-                cursor.sort("clientPatchId", "asc", deferred.makeNodeResolver());
-                return deferred.promise;
-            })
-            .then(function (cursor) {
-                var deferred = Q.defer();
-                cursor.toArray(deferred.makeNodeResolver());
-                return deferred.promise;
-            })
+        return db.findPatches({ taskId: task._id }, { sort: [ "clientPatchId" ], lazy: false })
             .then(function (foundPatches) {
                 if (!foundPatches)
                     throw new Error("Error loading patches.");

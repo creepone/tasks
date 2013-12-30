@@ -19,3 +19,7 @@ body {
 pre {
     margin-top: 5px;
 }
+
+pre:empty {
+    display: none;
+}
