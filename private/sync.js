@@ -332,7 +332,7 @@ function _mergePatches(patches)
         if ("notes" in update)
             $set.notes = update.notes;
         if ("reminder" in update) {
-            $set.reminder = task.reminder;
+            $set.reminder = task.reminder || {};
             if ("important" in update.reminder)
                 $set.reminder.important = update.reminder.important;
             if ("time" in update.reminder)
