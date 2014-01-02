@@ -8,7 +8,7 @@ exports.device =
 {
     sync: function (req, res)
     {
-        var device, devices;
+        var device;
 
         db.getDevice({ token: req.body.token })
             .then(function (foundDevice) {
@@ -18,16 +18,7 @@ exports.device =
                 device = foundDevice;
             })
             .then(function () {
-                return db.findDevices({ userId: device.userId }, { lazy: false });
-            })
-            .then(function (foundDevices) {
-                if (!foundDevices)
-                    throw new Error("Error loading devices.");
-
-                devices = foundDevices;
-            })
-            .then(function () {
-                return _insertDevicePatches(device, devices, req.body.patches);
+                return _insertPatches(device, req.body.patches);
             })
             .then(function () {
                 return _mergePatches(req.body.patches);
@@ -81,9 +72,34 @@ exports.device =
     }
 };
 
-
-function _insertDevicePatches(device, devices, patches)
+exports.web =
 {
+    submit: function (req, res)
+    {
+        var userId = new ObjectID(req.session.userId),
+            patches = [ req.body.patch ];
+        
+        return _insertPatches({ userId: userId }, patches)
+            .then(function () {
+                return _mergePatches(patches);
+            })
+            .done(function () {
+                // todo: return the task back ?
+                res.json({});
+            },
+            function (err) {
+                console.log(err);
+                res.send({ error: "Could not submit the change." });
+            });
+    }
+};
+
+
+function _insertPatches(device, patches)
+{
+    var devices;
+    var userId = device.userId;
+    
     var inserts = patches.map(function (patch) {
         return insertPatch(patch);
     });
@@ -92,11 +108,13 @@ function _insertDevicePatches(device, devices, patches)
     {
         _.extend(patch, {
             _id: new ObjectID(),
-            userId: device.userId,
-            deviceId: device._id,
+            userId: userId,
             clientPatchId: new ObjectID(patch.clientPatchId),
             taskId: new ObjectID(patch.taskId)
         });
+        
+        if (device._id)
+            patch.deviceId = device._id;
 
         return db.getPatch({ clientPatchId: patch.clientPatchId })
             .then(function (duplicate)
@@ -118,7 +136,7 @@ function _insertDevicePatches(device, devices, patches)
 
     function markIfOutOfOrder(otherDevice, patch)
     {
-        if (otherDevice._id.equals(device._id))
+        if (device._id && otherDevice._id.equals(device._id))
             return;
 
         // the device will get this patch when syncing next time anyway
@@ -128,7 +146,16 @@ function _insertDevicePatches(device, devices, patches)
         return db.updateDevice({ _id: otherDevice._id }, { $push: { toSync: patch._id }});
     }
 
-    return Q.all(inserts);
+    return db.findDevices({ userId: userId }, { lazy: false })
+        .then(function (foundDevices) {
+            if (!foundDevices)
+                throw new Error("Error loading devices.");
+
+            devices = foundDevices;
+        })
+        .then(function () {
+            return Q.all(inserts);
+        });
 }
 
 function _getDevicePatches(device)

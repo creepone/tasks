@@ -16,7 +16,7 @@ exports.render = function (req, res)
         .fail(function (err) {
             console.log(err);
             res.render("error");
-        })
+        });
 };
 
 exports.renderError = function (req, res) {

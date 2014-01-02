@@ -146,6 +146,7 @@ exports.web = {
 		relyingParty.verifyAssertion(req, function(error, result)
 		{
 			if (error || !result.authenticated) {
+				console.log(error);
 				res.writeHead(302, { Location: "/error" });
 				res.end();
 			}
@@ -172,7 +173,8 @@ exports.web = {
                         });
                     }
                 },
-                function () {
+                function (err) {
+					console.log(err);
                     res.writeHead(302, { Location: "/error" });
                     res.end();
                 });
@@ -192,7 +194,7 @@ exports.web = {
 
         db.insertUser(o)
             .then(function() {
-                var authenticateUrl = '/authenticate/init?' + querystring.stringify({ openid: req.body.openid });
+                var authenticateUrl = '/authenticate?' + querystring.stringify({ openid: req.body.openid });
                 res.writeHead(302, { Location: authenticateUrl });
                 res.end();
             },

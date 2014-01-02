@@ -14,6 +14,7 @@ exports.init = function (app) {
     app.get("/authenticate/init", authentication.web.authenticate);
     app.get("/authenticate/verify", authentication.web.verify);
     app.get("/authenticate/info", authentication.web.info);
+    app.post("/sync/submit", sync.web.submit);
     app.get("/logout", authentication.web.logout);
     app.post("/register", authentication.web.register);
 
