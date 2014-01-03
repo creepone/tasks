@@ -8,11 +8,9 @@ html
     block head
 
   body
-    .navbar.navbar-inverse.navbar-fixed-top
-      .navbar-inner
-        .container-fluid
-          .brand Tasks
-          block header-content
+    .navbar.navbar-inverse.navbar-fixed-top(role="navigation")
+      .navbar-brand Tasks
+      block header-content
 
     .container
       block content

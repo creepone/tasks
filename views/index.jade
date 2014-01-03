@@ -6,8 +6,10 @@ block head
   link(rel="stylesheet",href="/styles/index.css")
 
 block header-content
-  a#logout.pull-right(href="#"): i.icon-eject.icon-white
-  p#username.navbar-text.pull-right
+  .navbar-right
+    p.navbar-text#username
+    a.navbar-text#logout(href="#"): i.glyphicon.glyphicon-eject
+    
 
 block content
   #alert
@@ -19,7 +21,7 @@ block content
       -var time = new Date(task.reminder.time)
       p: small.time(data-important=task.reminder.important)= time
     each category in task.categories || []
-      span.label= category
+      span.label.label-default= category
 
     pre
       if task.notes
