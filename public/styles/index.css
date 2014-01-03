@@ -28,3 +28,47 @@ pre {
 pre:empty {
     display: none;
 }
+
+.modal input[name="taskName"],.tags,.has-switch,.input-group.date {
+    margin-bottom: 8px;
+}
+
+.modal .control-label {
+    float: left;
+    margin: 6px 8px 0 2px;
+}
+
+.modal-header {
+    height: 50px;
+}
+
+.modal-header h4 {
+    margin-top: 2px;
+}
+
+.modal-content {
+    background-color: #e5e5e5;
+}
+
+.modal-body {
+    background-color: white;
+}
+
+.modal-footer {
+    margin-top: 0px;
+}
+
+.bootstrap-tagsinput {
+    width: 100%;
+}
+
+.bootstrap-tagsinput input {
+    padding-left: 5px;
+}
+
+.bootstrap-tagsinput.focus {
+    border-color: #66afe9;
+    outline: 0;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+}

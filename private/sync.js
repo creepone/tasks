@@ -77,11 +77,11 @@ exports.web =
     submit: function (req, res)
     {
         var userId = new ObjectID(req.session.userId),
-            patches = [ req.body.patch ];
+            patch = req.body.patch;
         
-        return _insertPatches({ userId: userId }, patches)
+        return _insertPatches({ userId: userId }, [patch])
             .then(function () {
-                return _mergePatches(patches);
+                return _mergePatches([patch]);
             })
             .done(function () {
                 // todo: return the task back ?
