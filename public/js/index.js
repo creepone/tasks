@@ -52,7 +52,7 @@
 
         tasks.forEach(function (task) {
             if (task.reminder)
-                task.reminder.timeText = moment().format(_dateFormat, new Date(task.reminder.time));
+                task.reminder.timeText = moment(new Date(task.reminder.time)).format(_dateFormat);
         });
 
         var editedTask = {
