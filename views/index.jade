@@ -28,13 +28,15 @@ block content
 
   .needs-user(data-bind="foreach: tasks")
     div.task(data-bind="attr: { 'data-id': _id }")
-      button.removeTask.close &times;
+      .actions
+        button.removeTask.close: i.glyphicon.glyphicon-remove
+        button.editTask.close: i.glyphicon.glyphicon-pencil
       h4.text-info.name(data-bind="text: name")
-      div(data-bind="if: reminder")
+      div(data-bind="if: $data.reminder")
         p: small.time(data-bind="text: reminder.timeText, attr: { 'data-important': reminder.important }")
       div(data-bind="foreach: categories")
         span.label.label-default(data-bind="text: $data")
-      pre(data-bind="if: notes")
+      pre(data-bind="if: $data.notes")
         small(data-bind="text: notes")
       hr
 
@@ -42,8 +44,8 @@ block content
     .modal-dialog
       .modal-content
         .modal-header
-          button.close(type="button", data-dismiss="modal") &times;
-          h4 Add new task
+          button.close(type="button", data-dismiss="modal") &times
+          h4(data-bind="text: modalHeader($data)")
         .modal-body
           input.form-control(type="text", name="taskName", placeholder="Task name", data-bind="value: name")
           .control-label

@@ -246,11 +246,15 @@ function _mergePatches(patches)
             _id: patch.taskId,
             userId: patch.userId,
             name: patch.body.name,
-            notes: patch.body.notes,
-            reminder: patch.body.reminder,
             categories: patch.body.categories,
             lastClientPatchId: patch.clientPatchId
         };
+
+        if (patch.body.notes)
+            o.notes = patch.body.notes;
+
+        if (patch.body.reminder)
+            o.reminder = patch.body.reminder;
 
         return db.getTask({ _id: patch.taskId })
             .then(function (task) {
@@ -339,11 +343,17 @@ function _mergePatches(patches)
         if ("notes" in update)
             $set.notes = update.notes;
         if ("reminder" in update) {
-            $set.reminder = task.reminder || {};
-            if ("important" in update.reminder)
-                $set.reminder.important = update.reminder.important;
-            if ("time" in update.reminder)
-                $set.reminder.time = update.reminder.time;
+            // removing the reminder
+            if ("time" in update.reminder && update.reminder.time === null)
+                o.$unset = { reminder: "" };
+            else
+            {
+                $set.reminder = task.reminder || {};
+                if ("important" in update.reminder)
+                    $set.reminder.important = update.reminder.important;
+                if ("time" in update.reminder)
+                    $set.reminder.time = update.reminder.time;
+            }
         }
 
         $set.lastClientPatchId = _.last(patches).clientPatchId;

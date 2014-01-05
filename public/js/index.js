@@ -43,6 +43,11 @@
 
         $(document).on("blur", ".bootstrap-tagsinput input", function () {
             $(".bootstrap-tagsinput").removeClass("focus");
+
+            if ($(this).val()) {
+                $(".categories").tagsinput("add", $(this).val());
+                $(this).val("");
+            }
         });
 
         $(document).on("click", ".task .removeTask", function () {
@@ -62,7 +67,13 @@
             $(this).closest(".task").find(".removeTask").popover("hide");
         });
 
+        $(document).on("mouseleave", ".task", function () {
+            if ($(this).find(".popover").length > 0)
+                $(this).find(".removeTask").popover("hide");
+        });
+
         $(document).on("click", '.delete-buttons button[type="submit"]', _onRemoveTaskClick);
+        $(document).on("click", ".actions .editTask", _onEditTaskClick);
 
         $("#logout").click(_onLogoutClick);
         $("#addTask").on("click", _onAddTaskClick);
@@ -81,11 +92,13 @@
         });
 
         var editedTask = {
+            _id: ko.observable(),
             name: ko.observable(),
             notes: ko.observable(),
             categories: ko.observable([]),
             reminderImportant: ko.observable(false),
-            reminderTime: ko.observable(null)
+            reminderTime: ko.observable(null),
+            modalHeader: function () { return this._id() ? "Edit Task" : "Add New Task" }
         };
 
         _viewModel = {
@@ -158,11 +171,89 @@
         });
     }
 
+    function _createPatch(editedTask, task)
+    {
+        var patch = {};
+
+        if (!task) {
+            patch.operation = "add";
+            patch.body = {
+                name: editedTask.name,
+                notes: editedTask.notes,
+                categories: editedTask.categories
+            };
+
+            if (editedTask.reminderTime) {
+                patch.body.reminder = {
+                    time: +editedTask.reminderTime.toDate(),
+                    important: editedTask.reminderImportant
+                };
+            }
+        }
+        else {
+            patch.operation = "edit";
+            patch.taskId = task._id;
+            patch.body = {};
+
+            if (editedTask.name !== task.name)
+                patch.body.name = { old: task.name, new: editedTask.name };
+
+            if (editedTask.notes !== task.notes)
+                patch.body.notes = { old: task.notes, new: editedTask.notes };
+
+            var categoriesDiff = _arrayDiff(task.categories, editedTask.categories);
+            if (categoriesDiff)
+                patch.body.categories = categoriesDiff;
+
+            if (editedTask.reminderTime) {
+                var editedTime = +editedTask.reminderTime.toDate();
+                var editedImportant = editedTask.reminderImportant;
+
+                var time = task.reminder && task.reminder.time;
+                var important = !!(task.reminder && task.reminder.important);
+
+                if (editedTime !== time || editedImportant !== important)
+                    patch.body.reminder = {};
+
+                if (editedTime !== time)
+                    patch.body.reminder.time = editedTime;
+                if (editedImportant !== important)
+                    patch.body.reminder.important = editedImportant;
+            }
+            else if (task.reminder) {
+                patch.body.reminder = { time: null }
+            }
+        }
+
+        // nothing has changed => no need to submit a patch
+        if (Object.keys(patch.body).length == 0)
+            return undefined;
+
+        return patch;
+    }
+
+    function _arrayDiff(oldArray, newArray)
+    {
+        var toAdd = newArray.filter(function (i) { return oldArray.indexOf(i) < 0; });
+        var toRemove = oldArray.filter(function(i) { return newArray.indexOf(i) < 0; });
+
+        if (toAdd.length == 0 && toRemove.length == 0)
+            return undefined;
+
+        var res = {};
+        if (toAdd.length > 0)
+            res.add = toAdd;
+        if (toRemove.length > 0)
+            res.remove = toRemove;
+        return res;
+    }
+
 
     function _onAddTaskClick()
     {
         var task = _viewModel.editedTask;
 
+        task._id("");
         task.name("");
         task.notes("");
         task.categories([]);
@@ -172,24 +263,40 @@
         $(".modal").modal("show");
     }
 
+    function _onEditTaskClick()
+    {
+        var $task = $(this).closest(".task");
+        var taskId = $task.attr("data-id");
+
+        var task = _viewModel.tasks.filter(function (t) { return t._id == taskId; })[0];
+        var taskVm = _viewModel.editedTask;
+
+        taskVm._id(taskId);
+        taskVm.name(task.name);
+        taskVm.notes(task.notes);
+        taskVm.categories(task.categories);
+        taskVm.reminderImportant(task.reminder && task.reminder.important);
+
+        if (task.reminder)
+            taskVm.reminderTime(moment(new Date(task.reminder.time)));
+        else
+            taskVm.reminderTime(null);
+
+        $(".modal").modal("show");
+    }
+
     function _onSaveTaskClick()
     {
-        var task = ko.toJS(_viewModel.editedTask);
+        var editedTask = ko.toJS(_viewModel.editedTask);
+        var task = _viewModel.tasks.filter(function (t) { return t._id == editedTask._id; })[0];
 
-        var patch = {
-            operation: "add",
-            body: {
-                name: task.name,
-                notes: task.notes,
-                categories: task.categories
-            }
-        };
+        var patch = _createPatch(editedTask, task);
 
-        if (task.reminderTime) {
-            patch.body.reminder = {
-                time: +task.reminderTime.toDate(),
-                important: task.reminderImportant
-            };
+        // nothing to save
+        if (!patch)
+        {
+            $(".modal").modal("hide");
+            return;
         }
 
         _services.submitPatch(patch, function () {
@@ -226,7 +333,7 @@
 
     function _reportError(error)
     {
-        $("#alert").html("<div class=\"alert alert-error fade in\">" +
+        $("#alert").html("<div class=\"alert alert-danger fade in\">" +
             "<button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>" +
             "Error occured when communicating with the server. </div>");
 
