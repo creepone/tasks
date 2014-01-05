@@ -2,16 +2,24 @@ body {
   padding-top: 70px; /* 70px to make the container go all the way to the bottom of the topbar */
 }
 
+hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.needs-user {
+    display: none; /* initially hide the items */
+}
+
 #logout {
-    display: none; /* initially hide the logout button */
     color: #fff;
-    float: left;
     margin-left: 0;
 }
 
-#username {
+.navbar-right > * {
     float: left;
 }
+
 
 .time[data-important] {
     font-weight: bold;
@@ -71,4 +79,24 @@ pre:empty {
     outline: 0;
     -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+}
+
+.task {
+    position: relative;
+}
+
+button.removeTask {
+    position: absolute;
+    right: 5px;
+    top: 0px;
+}
+
+.popover-content .delete-buttons {
+    float:right;
+    margin-bottom: 10px;
+}
+
+.popover-content button {
+    float: left;
+    margin-left: 5px;
 }

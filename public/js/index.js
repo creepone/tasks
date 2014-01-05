@@ -4,49 +4,74 @@
         _dateFormat = "DD.MM.YYYY HH:mm";
 
 	$(function() {		
-		_getAuthInfo(function (res) {
-			if (!res.logged)
+		_services.getAuthInfo(function (authInfo) {
+			if (!authInfo.logged) {
 				window.location.href = '/authenticate';
-		
-			$("#logout").show().click(_logout);
-			$("#username").text(res.name);
+                return;
+            }
 
-            $("#addTask").focus();
+            _createView();
 
-            $('input[type="checkbox"]').bootstrapSwitch();
-
-            // hack to convince moment english week starts on Monday
-            moment()._lang._week.dow = 1;
-            $(".input-group.date").datetimepicker({
-                format: _dateFormat
-            });
-            $(".categories").tagsinput({
-                tagClass: function() { return "label label-default"; }
-            });
-
-            $(".modal").on("shown.bs.modal", function () {
-                $(".modal input:first").focus();
-            });
-
-            $(document).on("focus", ".bootstrap-tagsinput input", function () {
-                $(".bootstrap-tagsinput").addClass("focus");
-            });
-
-            $(document).on("blur", ".bootstrap-tagsinput input", function () {
-                $(".bootstrap-tagsinput").removeClass("focus");
-            });
-
-            $("#addTask").on("click", _onAddTaskClick);
-            $("#saveTask").on("click", _onSaveTaskClick);
-
-			_viewModel = _createViewModel();
+            _createViewModel(authInfo);
             ko.applyBindings(_viewModel);
-            _setupManualBindings();
 		});
 	});
 
+    function _createView()
+    {
+        // reveal all the user-dependent UI
+        $(".needs-user").show();
 
-    function _createViewModel()
+        $('input[type="checkbox"]').bootstrapSwitch();
+
+        // hack to convince moment english week starts on Monday
+        moment()._lang._week.dow = 1;
+        $(".input-group.date").datetimepicker({
+            format: _dateFormat
+        });
+        $(".categories").tagsinput({
+            tagClass: function() { return "label label-default"; }
+        });
+
+        $(".modal").on("shown.bs.modal", function () {
+            $(".modal input:first").focus();
+        });
+
+        $(document).on("focus", ".bootstrap-tagsinput input", function () {
+            $(".bootstrap-tagsinput").addClass("focus");
+        });
+
+        $(document).on("blur", ".bootstrap-tagsinput input", function () {
+            $(".bootstrap-tagsinput").removeClass("focus");
+        });
+
+        $(document).on("click", ".task .removeTask", function () {
+            $(this).popover({
+                html: true,
+                content: '<p>Sure to delete the selected task ?</p>' +
+                    '<div class="delete-buttons">' +
+                    '<button class="btn btn-xs btn-danger" type="submit">Delete</button>' +
+                    '<button class="btn btn-xs" type="button">Cancel</button>' +
+                    '</div>',
+                placement: "left",
+                trigger: "manual"
+            }).popover("show");
+        });
+
+        $(document).on("click", '.delete-buttons button[type="button"]', function () {
+            $(this).closest(".task").find(".removeTask").popover("hide");
+        });
+
+        $(document).on("click", '.delete-buttons button[type="submit"]', _onRemoveTaskClick);
+
+        $("#logout").click(_onLogoutClick);
+        $("#addTask").on("click", _onAddTaskClick);
+        $("#saveTask").on("click", _onSaveTaskClick);
+
+        $("#addTask").focus();
+    }
+
+    function _createViewModel(authInfo)
     {
         var tasks = JSON.parse($(".tasks").html());
 
@@ -63,65 +88,13 @@
             reminderTime: ko.observable(null)
         };
 
-        return {
+        _viewModel = {
+            username: authInfo.name,
             tasks: tasks,
             editedTask: editedTask
         };
-    }
 
-    function _onAddTaskClick()
-    {
-        var task = _viewModel.editedTask;
-
-        task.name("");
-        task.notes("");
-        task.categories([]);
-        task.reminderImportant(false);
-        task.reminderTime(null);
-
-        $(".modal").modal("show");
-    }
-
-    function _onSaveTaskClick()
-    {
-        var task = ko.toJS(_viewModel.editedTask);
-
-        var patch = {
-            operation: "add",
-            body: {
-                name: task.name,
-                notes: task.notes,
-                categories: task.categories
-            }
-        };
-
-        if (task.reminderTime) {
-            patch.body.reminder = {
-                time: +task.reminderTime.toDate(),
-                important: task.reminderImportant
-            };
-        }
-
-        $.ajax({
-            type: "POST",
-            url: "/sync/submit",
-            dataType: "json",
-            data: JSON.stringify({ patch: patch }),
-            contentType: "application/json; charset=utf-8",
-            success: function(data) {
-                if (data.error)
-                    return _reportError(data.error);
-
-                $(".modal").modal("hide");
-
-                // todo: update the local model instead
-                setTimeout(function () { window.location.reload(); }, 500);
-            },
-            failure: function(error) {
-                _reportError(error);
-                $(".modal").modal("hide");
-            }
-        });
+        _setupManualBindings();
     }
 
     function _setupManualBindings()
@@ -185,46 +158,127 @@
         });
     }
 
-	function _getAuthInfo(callback)
-	{
-		$.ajax({
-		    type: "GET",
-		    url: "/authenticate/info",
-		    dataType: "json",
-		    success: function(data) {
-				if (data.error)
-					return _reportError(data.error);
-				
-				callback(data);
-			},
-		    failure: _reportError
-		});
-	}
-	
-	function _logout(callback)
-	{
-		$.ajax({
-		    type: "GET",
-		    url: "/logout",
-		    dataType: "json",
-		    success: function(data) {
-				if (data.error)
-					return _reportError(data.error);
-				
-				window.location.reload();
-			},
-		    failure: _reportError
-		});
-	}
-	
-	function _reportError(error)
-	{
-		$("#alert").html("<div class=\"alert alert-error fade in\">" +
-		  "<button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>" +
-		  "Error occured when communicating with the server. </div>");
-		
-		setTimeout(function () { $("#alert .alert").alert("close"); }, 2000);
-		console.log(error);
-	}
+
+    function _onAddTaskClick()
+    {
+        var task = _viewModel.editedTask;
+
+        task.name("");
+        task.notes("");
+        task.categories([]);
+        task.reminderImportant(false);
+        task.reminderTime(null);
+
+        $(".modal").modal("show");
+    }
+
+    function _onSaveTaskClick()
+    {
+        var task = ko.toJS(_viewModel.editedTask);
+
+        var patch = {
+            operation: "add",
+            body: {
+                name: task.name,
+                notes: task.notes,
+                categories: task.categories
+            }
+        };
+
+        if (task.reminderTime) {
+            patch.body.reminder = {
+                time: +task.reminderTime.toDate(),
+                important: task.reminderImportant
+            };
+        }
+
+        _services.submitPatch(patch, function () {
+            $(".modal").modal("hide");
+
+            // todo: update the local model instead
+            setTimeout(function () { window.location.reload(); }, 500);
+        });
+    }
+
+    function _onRemoveTaskClick()
+    {
+        var $task = $(this).closest(".task");
+        var taskId = $task.attr("data-id");
+
+        var patch = {
+            operation: "remove",
+            taskId: taskId
+        };
+
+        _services.submitPatch(patch, function () {
+            $task.find(".removeTask").popover("hide");
+            $task.fadeOut();
+        });
+    }
+
+    function _onLogoutClick()
+    {
+        _services.logout(function () {
+            window.location.reload();
+        });
+    }
+
+
+    function _reportError(error)
+    {
+        $("#alert").html("<div class=\"alert alert-error fade in\">" +
+            "<button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>" +
+            "Error occured when communicating with the server. </div>");
+
+        setTimeout(function () { $("#alert .alert").alert("close"); }, 2000);
+        console.log(error);
+    }
+
+    var _services = {
+        getAuthInfo: function (callback) {
+            $.ajax({
+                type: "GET",
+                url: "/authenticate/info",
+                dataType: "json",
+                success: function(data) {
+                    if (data.error)
+                        return _reportError(data.error);
+
+                    callback(data);
+                },
+                failure: _reportError
+            });
+        },
+        logout: function (callback) {
+            $.ajax({
+                type: "GET",
+                url: "/logout",
+                dataType: "json",
+                success: function(data) {
+                    if (data.error)
+                        return _reportError(data.error);
+
+                    callback();
+                },
+                failure: _reportError
+            });
+        },
+        submitPatch: function (patch, callback) {
+            $.ajax({
+                type: "POST",
+                url: "/sync/submit",
+                dataType: "json",
+                data: JSON.stringify({ patch: patch }),
+                contentType: "application/json; charset=utf-8",
+                success: function(data) {
+                    if (data.error)
+                        return _reportError(data.error);
+
+                    callback();
+                },
+                failure: _reportError
+            });
+        }
+    }
 
 }());
