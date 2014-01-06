@@ -56,7 +56,7 @@
                 content: '<p>Sure to delete the selected task ?</p>' +
                     '<div class="delete-buttons">' +
                     '<button class="btn btn-xs btn-danger" type="submit">Delete</button>' +
-                    '<button class="btn btn-xs" type="button">Cancel</button>' +
+                    '<button class="btn btn-xs btn-default" type="button">Cancel</button>' +
                     '</div>',
                 placement: "left",
                 trigger: "manual"
@@ -68,8 +68,8 @@
         });
 
         $(document).on("mouseleave", ".task", function () {
-            if ($(this).find(".popover").length > 0)
-                $(this).find(".removeTask").popover("hide");
+           if ($(this).find(".popover").length > 0)
+               $(this).find(".removeTask").popover("hide");
         });
 
         $(document).on("click", '.delete-buttons button[type="submit"]', _onRemoveTaskClick);
