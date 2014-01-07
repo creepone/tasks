@@ -1,14 +1,13 @@
 (function () {
 
-    var _viewModel,
+    var _query = URI(window.location.href).search(true),
+        _viewModel,
         _dateFormat = "DD.MM.YYYY HH:mm";
 
-	$(function() {		
+	$(function() {
 		_services.getAuthInfo(function (authInfo) {
-			if (!authInfo.logged) {
-				window.location.href = '/authenticate';
-                return;
-            }
+			if (!authInfo.logged)
+                return _authenticate();
 
             _createView();
 
@@ -326,10 +325,52 @@
     function _onLogoutClick()
     {
         _services.logout(function () {
-            window.location.reload();
+            window.location.href = URI(window.location.href).addSearch({ autoAuth: 0 }).toString();
         });
     }
 
+    
+    function _authenticate()
+    {
+        if (_query.autoAuth === "0")
+        {
+            window.location.href = "/authenticate";
+            return;
+        }
+
+        // try to auto-authenticate with Google and Yahoo if possible
+        _services.authenticate("https://www.google.com/accounts/o8/id", function (data) {
+            if (data && data.url) {
+                $("<iframe />").hide()
+                .attr({ src: data.url })
+                .on("load", verify)
+                .appendTo("body");
+            }
+            else 
+            {
+                _services.authenticate("http://me.yahoo.com/", function (data) {
+                    if (data && data.url) {
+                        $("<iframe />").hide()
+                        .attr({ src: data.url })
+                        .on("load", verify)
+                        .appendTo("body");
+                    }
+                    else
+                        window.location.href = "/authenticate";
+                });
+            }
+        });
+        
+        function verify()
+        {
+            _services.getAuthInfo(function (authInfo) {
+                if (authInfo && authInfo.logged)
+                    window.location.reload();
+                else
+                    window.location.href = "/authenticate";
+            });
+        }
+    }
 
     function _reportError(error)
     {
@@ -382,6 +423,22 @@
                         return _reportError(data.error);
 
                     callback();
+                },
+                failure: _reportError
+            });
+        },
+        authenticate: function (provider, callback) {
+            var url = URI('/authenticate/init').addSearch({ openid: provider }).toString();
+            
+            $.ajax({
+                type: "GET",
+                url: url,
+                dataType: "json",
+                success: function(data) {
+                    if (data.error)
+                        return _reportError(data.error);
+                    
+                    callback(data);
                 },
                 failure: _reportError
             });
