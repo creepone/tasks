@@ -8,37 +8,25 @@ exports.device =
 {
     sync: function (req, res)
     {
-        var device;
-
         db.getDevice({ token: req.body.token })
-            .then(function (foundDevice) {
-                if (!foundDevice)
+            .then(function (device) {
+                if (!device)
                     throw new Error("Device not found.");
-
-                device = foundDevice;
-            })
-            .then(function () {
-                return _insertPatches(device, req.body.patches);
-            })
-            .then(function () {
-                return _mergePatches(req.body.patches);
-            })
-            .then(function () {
-                return _getDevicePatches(device);
-            })
-            .done(function (patches){
-                var patchesToClient = patches.map(function (p) {
-                    var res = _.extend({}, p);
-                    delete res.deviceId;
-                    delete res.userId;
-                    return res;
-                });
-
-                res.json({ patches: patchesToClient, toAcknowledge: device.toSync });
-            },
-            function (err) {
-                console.log(err);
-                res.send({ error: "Could not sync." });
+                
+                return _insertPatches(device, req.body.patches)
+                    .then(function () {
+                        return _mergePatches(device.userId);
+                    })
+                    .then(function () {
+                        return _getDevicePatches(device);
+                    })
+                    .done(function (patches){
+                        res.json({ patches: patches, toAcknowledge: device.toSync });
+                    },
+                    function (err) {
+                        console.log(err);
+                        res.send({ error: "Could not sync." });
+                    });
             });
     },
 
@@ -84,7 +72,7 @@ exports.web =
         
         return _insertPatches({ userId: userId }, [patch])
             .then(function () {
-                return _mergePatches([patch]);
+                return _mergePatches(userId);
             })
             .done(function () {
                 // todo: return the task back ?
@@ -113,7 +101,8 @@ function _insertPatches(device, patches)
             _id: new ObjectID(),
             userId: userId,
             clientPatchId: new ObjectID(patch.clientPatchId),
-            taskId: new ObjectID(patch.taskId)
+            taskId: new ObjectID(patch.taskId),
+            _applied: false
         });
         
         if (device._id)
@@ -181,68 +170,94 @@ function _getDevicePatches(device)
     // send all the patches submitted later
     conditions.push(query);
 
-    return db.findPatches({ $or: conditions }, { sort: ["clientPatchId"], lazy: false });
+    return db.findPatches({ $or: conditions }, { sort: ["clientPatchId"], lazy: false })
+        .then(function (patches) {
+            return patches.map(function (p) {
+                    var res = _.extend({}, p);
+                    delete res.deviceId;
+                    delete res.userId;
+                    delete res._applied;
+                    return res;
+                });
+        });
 }
 
-function _mergePatches(patches)
+function _mergePatches(userId)
 {
-    var taskMap = {},
-        patchMap = _.object(["add", "edit", "remove"].map(function (operation) {
-            return [operation, patches.filter(function(p) { return p.operation == operation; })];
-        }));
-
-    var inserts = patchMap["add"].map(function (p) { return insertTask(p); });
-    var deletes = patchMap["remove"].map(function (p) { return deleteTask(p); });
-
-    // do not apply updates on tasks we will delete
-    var editPatches = patchMap["edit"].filter(function (p) {
-        return !_.find(patchMap["remove"], function (removedP) {
-            return removedP.taskId.equals(p.taskId);
-        });
-    });
-
-    return Q.all(inserts)
-        .then(function () {
-            return Q.all(deletes);
-        })
-        .then(function () {
-            var query = { $or: editPatches.map(function (p) { return { _id: p.taskId }; }) };
-
-            if (query.$or.length == 0)
-                return [];
-
-            return db.findTasks(query, { lazy: false });
-        })
-        .then(function (tasks){
-            tasks.forEach(function (task) {
-                taskMap[task._id.toString()] = { task: task, patches: [] };
-            });
-
-            editPatches.forEach(function (patch) {
-                var o = taskMap[patch.taskId.toString()],
-                    task = o.task;
-
-                if (task.lastClientPatchId && task.lastClientPatchId.getTimestamp() >= patch.clientPatchId.getTimestamp())
-                    o.fullMerge = true;
-                else
-                    o.patches.push(patch);
-            });
-
-            var merges = [];
-
-            tasks.forEach(function (task) {
-                var o = taskMap[task._id.toString()];
-
-                if (o.fullMerge)
-                    merges.push(fullMerge(task));
-                else
-                    merges.push(simpleMerge(task, o.patches));
-            });
-
-            return Q.all(merges);
+    return db.findPatches({ userId: userId, _applied: false }, { lazy: false, sort: ["clientPatchId"] })
+        .then(function (patches) {
+            return mergeAll(patches)
+                .then(function () { markAllDone(patches); });
         });
 
+    function mergeAll(patches)
+    {
+        var taskMap = {},
+            patchMap = _.object(["add", "edit", "remove"].map(function (operation) {
+                return [operation, patches.filter(function(p) { return p.operation == operation; })];
+            }));
 
+        var inserts = patchMap["add"].map(function (p) { return insertTask(p); });
+        var deletes = patchMap["remove"].map(function (p) { return deleteTask(p); });
+
+        // do not apply updates on tasks we will delete
+        var editPatches = patchMap["edit"].filter(function (p) {
+            return !_.find(patchMap["remove"], function (removedP) {
+                return removedP.taskId.equals(p.taskId);
+            });
+        });
+
+        return Q.all(inserts)
+            .then(function () {
+                return Q.all(deletes);
+            })
+            .then(function () {
+                var query = { $or: editPatches.map(function (p) { return { _id: p.taskId }; }) };
+
+                if (query.$or.length == 0)
+                    return [];
+
+                return db.findTasks(query, { lazy: false });
+            })
+            .then(function (tasks){
+                tasks.forEach(function (task) {
+                    taskMap[task._id.toString()] = { task: task, patches: [] };
+                });
+
+                editPatches.forEach(function (patch) {
+                    var o = taskMap[patch.taskId.toString()],
+                        task = o.task;
+
+                    if (task.lastClientPatchId && task.lastClientPatchId.getTimestamp() >= patch.clientPatchId.getTimestamp())
+                        o.fullMerge = true;
+                    else
+                        o.patches.push(patch);
+                });
+
+                var merges = [];
+
+                tasks.forEach(function (task) {
+                    var o = taskMap[task._id.toString()];
+
+                    if (o.fullMerge)
+                        merges.push(fullMerge(task));
+                    else
+                        merges.push(simpleMerge(task, o.patches));
+                });
+
+                return Q.all(merges);
+            });
+    }
+    
+    function markAllDone(patches)
+    {
+        var updates = patches.map(function (patch) {
+            return db.updatePatch({ _id: patch._id }, { $unset: { _applied: "" } });
+        });
+        
+        return Q.all(updates);
+    }
+    
     function insertTask(patch)
     {
         var o = {
@@ -388,28 +403,23 @@ function _mergePatches(patches)
     function fullMerge(task)
     {
         // recreate the task and apply all the patches from the database onto it
-
-        var patches;
-
+        
         return db.findPatches({ taskId: task._id }, { sort: [ "clientPatchId" ], lazy: false })
-            .then(function (foundPatches) {
-                if (!foundPatches)
+            .then(function (patches) {
+                if (!patches)
                     throw new Error("Error loading patches.");
 
-                if (foundPatches[0].operation != "add")
+                if (patches[0].operation != "add")
                     throw new Error("Inconsistent history of a task.");
 
-                patches = foundPatches;
-            })
-            .then(function () {
-                return db.deleteTask({ _id: task._id });
-            })
-            .then(function () {
-                var insertPatch = patches.shift();
-                return insertTask(insertPatch);
-            })
-            .then(function () {
-                return simpleMerge(task, patches);
+                return db.deleteTask({ _id: task._id })
+                    .then(function () {
+                        var insertPatch = patches.shift();
+                        return insertTask(insertPatch);
+                    })
+                    .then(function () {
+                        return simpleMerge(task, patches);
+                    });
             });
     }
 }

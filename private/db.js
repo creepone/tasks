@@ -178,6 +178,19 @@ _.extend(exports, {
                 return deferred.promise;
             });
     },
+    
+    /*
+     Updates the given patch in the database.
+     */
+    updatePatch: function(patch, o)
+    {
+        return _getCollection("patches")
+            .then(function(patches) {
+                var deferred = Q.defer();
+                patches.findAndModify(patch, [], o, { w: 1 }, deferred.makeNodeResolver());
+                return deferred.promise;
+            });
+    },
 
     /*
      Deletes the given task in the database.
