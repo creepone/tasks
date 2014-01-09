@@ -11,8 +11,8 @@
                     return _authenticate();
 
                 _createView();
-
                 _createViewModel(authInfo);
+
                 ko.applyBindings(_viewModel);
             }, _reportError);
     });
@@ -86,11 +86,7 @@
     function _createViewModel(authInfo)
     {
         var tasks = JSON.parse($(".tasks").html());
-
-        tasks.forEach(function (task) {
-            if (task.reminder)
-                task.reminder.timeText = moment(new Date(task.reminder.time)).format(_dateFormat);
-        });
+        tasks = ko.observableArray(tasks.map(_convertFromServer));
 
         var editedTask = {
             _id: ko.observable(),
@@ -249,6 +245,14 @@
         return res;
     }
 
+    function _convertFromServer(task)
+    {
+    	task = $.extend({}, task);
+    	if (task.reminder)
+    		task.reminder.timeText = moment(new Date(task.reminder.time)).format(_dateFormat);
+    	return task;
+    }
+
 
     function _onAddTaskClick()
     {
@@ -269,7 +273,7 @@
         var $task = $(this).closest(".task");
         var taskId = $task.attr("data-id");
 
-        var task = _viewModel.tasks.filter(function (t) { return t._id == taskId; })[0];
+        var task = _viewModel.tasks().filter(function (t) { return t._id == taskId; })[0];
         var taskVm = _viewModel.editedTask;
 
         taskVm._id(taskId);
@@ -289,7 +293,7 @@
     function _onSaveTaskClick()
     {
         var editedTask = ko.toJS(_viewModel.editedTask);
-        var task = _viewModel.tasks.filter(function (t) { return t._id == editedTask._id; })[0];
+        var task = _viewModel.tasks().filter(function (t) { return t._id == editedTask._id; })[0];
 
         var patch = _createPatch(editedTask, task);
 
@@ -301,11 +305,14 @@
         }
 
         _services.submitPatch(patch)
-            .done(function() {
-                $(".modal").modal("hide");
+            .done(function(data) {
+            	$(".modal").modal("hide");
 
-                // todo: update the local model instead
-                setTimeout(function () { window.location.reload(); }, 500);
+            	if (task)
+            		_viewModel.tasks.remove(task);
+
+            	_viewModel.tasks.push(_convertFromServer(data.task));
+            	_viewModel.tasks.sort(function (a, b) { return ((a.reminder && a.reminder.time) || 0) - ((b.reminder && b.reminder.time) || 0); });
             }, _reportError);
     }
 
@@ -322,10 +329,12 @@
         _services.submitPatch(patch)
             .done(function () {
                 $task.find(".removeTask").popover("hide");
-                $task.fadeOut();
+                $task.fadeOut(function () {
+                	_viewModel.tasks.remove(function (t) { return t._id == taskId });
+                });
             }, _reportError);
     }
-
+ 
     function _onLogoutClick()
     {
         _services.logout()

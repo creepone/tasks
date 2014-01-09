@@ -74,9 +74,14 @@ exports.web =
             .then(function () {
                 return _mergePatches(userId);
             })
-            .done(function () {
-                // todo: return the task back ?
-                res.json({});
+            .then(function () {
+                if (patch.operation == "delete")
+                    return { _id: patch.taskId };
+                else
+                    return db.getTask({ _id: patch.taskId });
+            })
+            .done(function (task) {
+                res.json({ task: task });
             },
             function (err) {
                 console.log(err);

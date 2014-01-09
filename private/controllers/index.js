@@ -8,12 +8,12 @@ exports.render = function (req, res)
         return res.render("index");
 
     db.findTasks({ userId: new ObjectID(req.session.userId) }, { sort: [ "reminder.time" ], lazy: false })
-        .then(function(tasks) {
+        .done(function(tasks) {
             res.render("index", {
                 tasks: tasks
             });
-        })
-        .fail(function (err) {
+        },
+        function (err) {
             console.log(err);
             res.render("error");
         });

@@ -1,6 +1,5 @@
 var express = require('express'),
     jade = require("jade"),
-    authentication = require('./private/authentication'),
     router = require("./private/router");
 	
 var app = express();
