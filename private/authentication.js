@@ -148,7 +148,7 @@ exports.web = {
 			if (error || !result.authenticated) {
 				console.log(error);
 				res.writeHead(302, { Location: "/error" });
-				res.end();
+				return res.end();
 			}
 
 			var claimedIdentifier = result.claimedIdentifier;

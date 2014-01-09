@@ -16,6 +16,10 @@ hr {
     margin-left: 0;
 }
 
+#loader {
+    margin-top: 30px;	
+}
+
 .navbar-right > * {
     float: left;
 }

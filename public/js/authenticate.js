@@ -18,7 +18,7 @@
 		$("button[data-provider]").click(function () {
 
 			// toggle the selected button
-			$(".btn-info").each(function () { $(this).removeClass("btn-info"); })
+		    $(".btn-info").each(function() { $(this).removeClass("btn-info"); });
 			$(this).addClass("btn-info");
 			
 			var provider = $(this).data("provider");
@@ -63,7 +63,7 @@
 	{
 		$(".with-account").hide();
 		$("#loader").show();
-		
+	
 		_authenticate({ provider: provider}, function (res) {
 			if (res.logged)
 				window.location.href = '/';

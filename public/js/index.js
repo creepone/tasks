@@ -4,21 +4,23 @@
         _viewModel,
         _dateFormat = "DD.MM.YYYY HH:mm";
 
-	$(function() {
-		_services.getAuthInfo(function (authInfo) {
-			if (!authInfo.logged)
-                return _authenticate();
+    $(function() {
+        _services.getAuthInfo()
+            .done(function(authInfo) {
+                if (!authInfo.logged)
+                    return _authenticate();
 
-            _createView();
+                _createView();
 
-            _createViewModel(authInfo);
-            ko.applyBindings(_viewModel);
-		});
-	});
+                _createViewModel(authInfo);
+                ko.applyBindings(_viewModel);
+            }, _reportError);
+    });
 
     function _createView()
     {
         // reveal all the user-dependent UI
+        $("#loader").hide();
         $(".needs-user").show();
 
         $('input[type="checkbox"]').bootstrapSwitch();
@@ -298,12 +300,13 @@
             return;
         }
 
-        _services.submitPatch(patch, function () {
-            $(".modal").modal("hide");
+        _services.submitPatch(patch)
+            .done(function() {
+                $(".modal").modal("hide");
 
-            // todo: update the local model instead
-            setTimeout(function () { window.location.reload(); }, 500);
-        });
+                // todo: update the local model instead
+                setTimeout(function () { window.location.reload(); }, 500);
+            }, _reportError);
     }
 
     function _onRemoveTaskClick()
@@ -316,17 +319,19 @@
             taskId: taskId
         };
 
-        _services.submitPatch(patch, function () {
-            $task.find(".removeTask").popover("hide");
-            $task.fadeOut();
-        });
+        _services.submitPatch(patch)
+            .done(function () {
+                $task.find(".removeTask").popover("hide");
+                $task.fadeOut();
+            }, _reportError);
     }
 
     function _onLogoutClick()
     {
-        _services.logout(function () {
-            window.location.href = URI(window.location.href).addSearch({ autoAuth: 0 }).toString();
-        });
+        _services.logout()
+            .done(function() {
+                window.location.href = URI(window.location.href).addSearch({ autoAuth: 0 }).toString();
+            }, _reportError);
     }
 
     
@@ -339,37 +344,46 @@
         }
 
         // try to auto-authenticate with Google and Yahoo if possible
-        _services.authenticate("https://www.google.com/accounts/o8/id", function (data) {
-            if (data && data.url) {
-                $("<iframe />").hide()
-                .attr({ src: data.url })
-                .on("load", verify)
-                .appendTo("body");
-            }
-            else 
-            {
-                _services.authenticate("http://me.yahoo.com/", function (data) {
-                    if (data && data.url) {
-                        $("<iframe />").hide()
-                        .attr({ src: data.url })
-                        .on("load", verify)
-                        .appendTo("body");
-                    }
-                    else
-                        window.location.href = "/authenticate";
-                });
-            }
-        });
-        
-        function verify()
-        {
-            _services.getAuthInfo(function (authInfo) {
+        var providers = ["https://www.google.com/accounts/o8/id", "http://me.yahoo.com/"];
+
+        Q.allSettled(providers.map(_services.authenticate))
+            .then(function(results) {
+                var toAuth = results
+                    .filter(function (r) { return r.value && r.value.url; })
+                    .map(function (r) { return authenticateInIframe(r.value.url); });
+
+                return Q.allSettled(toAuth);
+            })
+            .then(function() {
+                return _services.getAuthInfo();
+            })
+            .done(function(authInfo) {
                 if (authInfo && authInfo.logged)
                     window.location.reload();
                 else
                     window.location.href = "/authenticate";
+            }, 
+            function() {
+                 window.location.href = "/authenticate";
             });
+
+        function authenticateInIframe(url)
+        {
+            var deferred = Q.defer();
+            $("<iframe />").hide().attr({ src: url }).on("load", function () { deferred.resolve(); }).appendTo("body");
+            return deferred.promise.timeout(2000);
         }
+    }
+
+    function _ajax(o)
+    {
+        return Q($.ajax(o))
+            .then(function(data) {
+                if (data.error)
+                    throw new Error(data.error);
+                else
+                    return data;
+            });
     }
 
     function _reportError(error)
@@ -383,66 +397,37 @@
     }
 
     var _services = {
-        getAuthInfo: function (callback) {
-            $.ajax({
+        getAuthInfo: function () {
+            return _ajax({
                 type: "GET",
                 url: "/authenticate/info",
-                dataType: "json",
-                success: function(data) {
-                    if (data.error)
-                        return _reportError(data.error);
-
-                    callback(data);
-                },
-                failure: _reportError
+                dataType: "json"
             });
         },
-        logout: function (callback) {
-            $.ajax({
+        logout: function () {
+            return _ajax({
                 type: "GET",
                 url: "/logout",
-                dataType: "json",
-                success: function(data) {
-                    if (data.error)
-                        return _reportError(data.error);
-
-                    callback();
-                },
-                failure: _reportError
+                dataType: "json"
             });
         },
-        submitPatch: function (patch, callback) {
-            $.ajax({
+        submitPatch: function (patch) {
+            return _ajax({
                 type: "POST",
                 url: "/sync/submit",
                 dataType: "json",
                 data: JSON.stringify({ patch: patch }),
-                contentType: "application/json; charset=utf-8",
-                success: function(data) {
-                    if (data.error)
-                        return _reportError(data.error);
-
-                    callback();
-                },
-                failure: _reportError
+                contentType: "application/json; charset=utf-8"
             });
         },
-        authenticate: function (provider, callback) {
+        authenticate: function (provider) {
             var url = URI('/authenticate/init').addSearch({ openid: provider }).toString();
-            
-            $.ajax({
+            return _ajax({
                 type: "GET",
                 url: url,
-                dataType: "json",
-                success: function(data) {
-                    if (data.error)
-                        return _reportError(data.error);
-                    
-                    callback(data);
-                },
-                failure: _reportError
+                dataType: "json"
             });
         }
-    }
+    };
 
 }());
