@@ -167,7 +167,7 @@ exports.web = {
                     }
                     else
                     {
-                        res.render('register', {
+                        res.render("register", {
                             openid: req.query.openid,
                             claimedIdentifier: claimedIdentifier
                         });
