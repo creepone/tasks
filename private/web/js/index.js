@@ -60,6 +60,14 @@ function _createView()
         }
     });
 
+    $("body").on("click", function (e) {
+        $(".has-popover").each(function () {
+            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $(".popover").has(e.target).length === 0) {
+                $(this).popover("hide");
+            }
+        });
+    });
+
     $(document).on("click", ".task .removeTask", function () {
         $(this).popover({
             html: true,
@@ -86,6 +94,7 @@ function _createView()
     $(document).on("click", ".actions .editTask", _onEditTaskClick);
 
     $("#logout").click(_onLogoutClick);
+    $("#devices").click(_onDevicesClick);
     $("#addTask").on("click", _onAddTaskClick);
     $("#saveTask").on("click", _onSaveTaskClick);
 
@@ -262,6 +271,22 @@ function _convertFromServer(task)
     return task;
 }
 
+function _convertDeviceFromServer(device)
+{
+    device = $.extend({}, device);
+    device.version = moment(new Date(device.version)).format(_dateFormat);
+    return device;
+}
+
+function _renderTemplate(name, data)
+{
+    var temp = $("<div>");
+    ko.applyBindingsToNode(temp[0], { template: { name: name, data: data } });
+    var html = temp.html();
+    temp.remove();
+    return html;
+}
+
 
 function _onAddTaskClick()
 {
@@ -350,6 +375,27 @@ function _onLogoutClick()
         .done(function() {
             window.location.href = URI(window.location.href).addSearch({ autoAuth: 0 }).toString();
         }, _reportError);
+}
+
+function _onDevicesClick()
+{
+    var that = this;
+
+    _services.getDeviceStats()
+        .then(function (stats) {
+            if (stats.devices.length == 0)
+                return;
+
+            stats.devices = stats.devices.map(_convertDeviceFromServer);
+
+            $(that).attr("data-content", _renderTemplate("devicesTemplate", stats));
+
+            $(that).popover({
+                html: true,
+                placement: "auto",
+                trigger: "manual"
+            }).popover("show");
+        });
 }
 
 
@@ -443,6 +489,13 @@ var _services = {
         return _ajax({
             type: "GET",
             url: url,
+            dataType: "json"
+        });
+    },
+    getDeviceStats: function () {
+        return _ajax({
+            type: "GET",
+            url: "/devices/stats",
             dataType: "json"
         });
     }

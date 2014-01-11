@@ -7,9 +7,10 @@ block head
   script.tasks(type="text/json")!= JSON.stringify(tasks)
 
 block header-content
-  .navbar-right
-    p.navbar-text(data-bind="text: username")
-    a.navbar-text.needs-user#logout(href="#"): i.glyphicon.glyphicon-eject
+    a.navbar-text.needs-user.has-popover#devices(href="#"): i.glyphicon.glyphicon-phone
+    .navbar-right
+      p.navbar-text(data-bind="text: username")
+      a.navbar-text.needs-user#logout(href="#"): i.glyphicon.glyphicon-eject
 
 block content
   #alert
@@ -57,3 +58,15 @@ block content
           button.btn.btn-primary#saveTask(type="button", data-bind="enable: name") Save
           button.btn.btn-default(type="button", data-dismiss="modal") Close
 
+
+  script#devicesTemplate(type="text/html").
+    <div data-bind="foreach: devices">
+      <div>
+        <span data-bind="if: !needsSync"><i class="glyphicon glyphicon-ok" /></span>
+        <span data-bind="if: needsSync"><i class="glyphicon glyphicon-refresh" /></span>
+        <small><strong data-bind="text: name" /></small>
+      </div>
+      <div>
+        <small data-bind="text: version" />
+      </div>
+    </div>

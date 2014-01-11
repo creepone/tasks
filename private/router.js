@@ -1,5 +1,6 @@
 var authentication = require("./authentication"),
     sync = require("./sync"),
+    stats = require("./stats"),
     index = require("./controllers/index");
 
 var routes = [
@@ -17,6 +18,7 @@ var routes = [
     { path: "/logout", method: authentication.web.logout },
     { path: "/sync/submit", method: sync.web.submit, verb: "POST" },
     { path: "/register", method: authentication.web.register, verb: "POST" },
+    { path: "/devices/stats", method: stats.deviceStats },
     
     // web pages
     { path: "/", method: index.render },

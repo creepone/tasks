@@ -43,6 +43,20 @@ _.extend(exports, {
     },
 
     /*
+     Queries the database for the chronologically newest patch with properties specified in o.
+     */
+    getLastPatch: function(o)
+    {
+        return this.findPatches(o, { sort: ["clientPatchId", "desc"] })
+            .then(function (cursor) {
+                return _iterateCursor(cursor.limit(1));
+            })
+            .then(function (foundPatches) {
+                return foundPatches && foundPatches[0];
+            });
+    },
+
+    /*
      Queries the database for the task with properties specified in o.
      */
     getTask: function(o)
