@@ -60,13 +60,23 @@ block content
 
 
   script#devicesTemplate(type="text/html").
-    <div data-bind="foreach: devices">
+    <div class="popoverDevices" data-bind="foreach: devices">
       <div>
-        <span data-bind="if: !needsSync"><i class="glyphicon glyphicon-ok" /></span>
-        <span data-bind="if: needsSync"><i class="glyphicon glyphicon-refresh" /></span>
+        <i class="glyphicon glyphicon-ok" data-bind="visible: !needsSync" />
+        <i class="glyphicon glyphicon-refresh" data-bind="visible: needsSync" />
         <small><strong data-bind="text: name" /></small>
       </div>
       <div>
         <small data-bind="text: version" />
+      </div>
+      <hr />
+    </div>
+
+  script#deleteTemplate(type="text/html").
+    <div class="popoverDelete">
+      <p>Sure to delete the selected task ?</p>
+      <div class="buttons">
+        <button class="btn btn-xs btn-danger" type="submit">Delete</button>
+        <button class="btn btn-xs btn-default" type="button">Cancel</button>
       </div>
     </div>

@@ -69,19 +69,15 @@ function _createView()
     });
 
     $(document).on("click", ".task .removeTask", function () {
+        $(this).attr("data-content", $("#deleteTemplate").html());
         $(this).popover({
             html: true,
-            content: '<p>Sure to delete the selected task ?</p>' +
-                '<div class="delete-buttons">' +
-                '<button class="btn btn-xs btn-danger" type="submit">Delete</button>' +
-                '<button class="btn btn-xs btn-default" type="button">Cancel</button>' +
-                '</div>',
             placement: "left",
             trigger: "manual"
         }).popover("show");
     });
 
-    $(document).on("click", '.delete-buttons button[type="button"]', function () {
+    $(document).on("click", '.popoverDelete .buttons button[type="button"]', function () {
         $(this).closest(".task").find(".removeTask").popover("hide");
     });
 
@@ -90,7 +86,7 @@ function _createView()
            $(this).find(".removeTask").popover("hide");
     });
 
-    $(document).on("click", '.delete-buttons button[type="submit"]', _onRemoveTaskClick);
+    $(document).on("click", '.popoverDelete .buttons button[type="submit"]', _onRemoveTaskClick);
     $(document).on("click", ".actions .editTask", _onEditTaskClick);
 
     $("#logout").click(_onLogoutClick);
@@ -274,7 +270,10 @@ function _convertFromServer(task)
 function _convertDeviceFromServer(device)
 {
     device = $.extend({}, device);
-    device.version = moment(new Date(device.version)).format(_dateFormat);
+    if (!device.version)
+        device.version = "never";
+    else
+        device.version = moment(new Date(device.version)).format(_dateFormat);
     return device;
 }
 
@@ -389,9 +388,9 @@ function _onDevicesClick()
             stats.devices = stats.devices.map(_convertDeviceFromServer);
 
             $(that).attr("data-content", _renderTemplate("devicesTemplate", stats));
+            $(that).attr("data-html", "true");
 
             $(that).popover({
-                html: true,
                 placement: "auto",
                 trigger: "manual"
             }).popover("show");
