@@ -60,7 +60,7 @@ function _createView()
         }
     });
 
-    $("body").on("click", function (e) {
+    $(document).on("click", function (e) {
         $(".has-popover").each(function () {
             if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $(".popover").has(e.target).length === 0) {
                 $(this).popover("hide");
