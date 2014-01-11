@@ -1,0 +1,12 @@
+{
+    "browserify": {
+        "transform": [ "browserify-shim" ]
+    },
+    "browserify-shim": {
+        "./lib/moment.js": "moment",
+        "./lib/knockout.js": "ko",
+        "./lib/q.min.js": "Q",
+        "./lib/jquery.js": "$",
+        "./lib/bootstrap.min.js": { "depends": "./lib/jquery.js:jQuery" }
+    }
+}

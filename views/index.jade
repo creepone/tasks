@@ -2,15 +2,7 @@ extends layout
 
 block head
   title Tasks
-  script(src="/js/lib/knockout.js")
-  script(src="/js/lib/moment.js")
-  script(src="/js/lib/bootstrap-switch.js")
-  script(src="/js/lib/bootstrap-tagsinput.js")
-  script(src="/js/lib/bootstrap-datetimepicker.js")
   script(src="/js/index.js")
-  link(rel="stylesheet",href="/styles/bootstrap-switch.css")
-  link(rel="stylesheet",href="/styles/bootstrap-tagsinput.css")
-  link(rel="stylesheet",href="/styles/bootstrap-datetimepicker.css")
   link(rel="stylesheet",href="/styles/index.css")
   script.tasks(type="text/json")!= JSON.stringify(tasks)
 
