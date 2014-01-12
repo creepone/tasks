@@ -63,7 +63,7 @@ function _createView()
     $(document).on("click", function (e) {
         $(".has-popover").each(function () {
             if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $(".popover").has(e.target).length === 0) {
-                $(this).popover("hide");
+                $(this).popover("destroy");
             }
         });
     });
@@ -83,7 +83,7 @@ function _createView()
 
     $(document).on("mouseleave", ".task", function () {
        if ($(this).find(".popover").length > 0)
-           $(this).find(".removeTask").popover("hide");
+           $(this).find(".removeTask").popover("destroy");
     });
 
     $(document).on("click", '.popoverDelete .buttons button[type="submit"]', _onRemoveTaskClick);
