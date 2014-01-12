@@ -1,7 +1,7 @@
 var $ = require("./lib/jquery"),
     URI = require("./lib/URI/URI");
 
-require("./lib/bootstrap.min");
+require("./lib/bootstrap");
 
 $(function()
 {

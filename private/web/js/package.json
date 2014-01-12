@@ -7,6 +7,6 @@
         "./lib/knockout.js": "ko",
         "./lib/q.min.js": "Q",
         "./lib/jquery.js": "$",
-        "./lib/bootstrap.min.js": { "depends": "./lib/jquery.js:jQuery" }
+        "./lib/bootstrap.js": { "depends": "./lib/jquery.js:jQuery" }
     }
 }

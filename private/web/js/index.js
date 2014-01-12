@@ -4,7 +4,7 @@ var $ = require("./lib/jquery"),
     ko = require("./lib/knockout"),
     moment = require("./lib/moment");
 
-require("./lib/bootstrap.min");
+require("./lib/bootstrap");
 require("./lib/bootstrap-switch");
 require("./lib/bootstrap-tagsinput");
 require("./lib/bootstrap-datetimepicker");
@@ -69,9 +69,9 @@ function _createView()
     });
 
     $(document).on("click", ".task .removeTask", function () {
-        $(this).attr("data-content", $("#deleteTemplate").html());
         $(this).popover({
             html: true,
+            content: $("#deleteTemplate").html(),
             placement: "left",
             trigger: "manual"
         }).popover("show");
@@ -387,10 +387,9 @@ function _onDevicesClick()
 
             stats.devices = stats.devices.map(_convertDeviceFromServer);
 
-            $(that).attr("data-content", _renderTemplate("devicesTemplate", stats));
-            $(that).attr("data-html", "true");
-
             $(that).popover({
+                html: true,
+                content: function () { return _renderTemplate("devicesTemplate", stats); },
                 placement: "auto",
                 trigger: "manual"
             }).popover("show");
