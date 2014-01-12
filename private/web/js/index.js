@@ -368,17 +368,20 @@ function _onRemoveTaskClick()
         }, _reportError);
 }
 
-function _onLogoutClick()
+function _onLogoutClick(event)
 {
+    event.preventDefault();
+
     _services.logout()
         .done(function() {
             window.location.href = URI(window.location.href).addSearch({ autoAuth: 0 }).toString();
         }, _reportError);
 }
 
-function _onDevicesClick()
+function _onDevicesClick(event)
 {
     var that = this;
+    event.preventDefault();
 
     _services.getDeviceStats()
         .then(function (stats) {
