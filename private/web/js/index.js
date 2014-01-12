@@ -49,6 +49,13 @@ function _createView()
         $(".modal input:first").focus();
     });
 
+    $(document).on("keydown", ".input-group.date input", function (event) {
+        if (event.keyCode == 13) {
+            event.stopPropagation();
+            _transformDate(this);
+        }
+    });
+
     $(document).on("focus", ".bootstrap-tagsinput input", function () {
         $(".bootstrap-tagsinput").addClass("focus");
     });
@@ -288,6 +295,33 @@ function _renderTemplate(name, data)
     var html = temp.html();
     temp.remove();
     return html;
+}
+
+function _transformDate(input)
+{
+    var val = $(input).val();
+
+    if (!val || !/^\+\d+(:\d{2}){0,2}$/.test(val))
+        return;
+
+    var shiftedVal = val;
+
+    // + minutes
+    if (/^\+\d+$/.test(val))
+    {
+        var minutes = parseInt(val, 10);
+        shiftedVal = moment()
+            .add({ minutes: minutes });
+    }
+    else
+    {
+        // + hours:minutes
+        var parsed = moment(val, "HH:mm");
+        shiftedVal = moment()
+            .add({ hours: parsed.hours(), minutes: parsed.minutes() });
+    }
+
+    _viewModel.editedTask.reminderTime(shiftedVal);
 }
 
 

@@ -30,6 +30,7 @@ function createTransformTarget(task, method)
         file.src.forEach(function (src) {
             transforms.push(
                 method({ src: src, dest: file.dest, minify: !task.flags.debug })
+                    .then(function () { grunt.log.writeln("Transformed " + src)})
             );
         });
     });
@@ -60,10 +61,8 @@ function transformScript(o)
         fs.writeFile(dest, min.code, function (err) {
             if (err)
                 deferred.reject(err);
-            else {
-                grunt.log.writeln("Transformed " + src);
+            else
                 deferred.resolve();
-            }
         });
     });
 
@@ -95,10 +94,8 @@ function transformStylesheet(o)
             fs.writeFile(dest, css, function (err) {
                 if (err)
                     deferred.reject(err);
-                else {
-                    grunt.log.writeln("Transformed " + src);
+                else
                     deferred.resolve();
-                }
             });
         });
     });
