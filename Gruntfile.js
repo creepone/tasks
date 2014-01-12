@@ -11,11 +11,11 @@ module.exports = function(grunt) {
         },
         watch: {
             scripts: {
-                files: ["./private/web/js/**/*"],
+                files: ["./private/web/js/**"],
                 tasks: ["build:scripts:debug"]
             },
             stylesheets: {
-                files: ["./private/web/styles/**/*"],
+                files: ["./private/web/styles/**"],
                 tasks: ["build:stylesheets:debug"]
             }
         }

@@ -60,8 +60,10 @@ function transformScript(o)
         fs.writeFile(dest, min.code, function (err) {
             if (err)
                 deferred.reject(err);
-            else
+            else {
+                grunt.log.writeln("Transformed " + src);
                 deferred.resolve();
+            }
         });
     });
 
@@ -93,8 +95,10 @@ function transformStylesheet(o)
             fs.writeFile(dest, css, function (err) {
                 if (err)
                     deferred.reject(err);
-                else
+                else {
+                    grunt.log.writeln("Transformed " + src);
                     deferred.resolve();
+                }
             });
         });
     });

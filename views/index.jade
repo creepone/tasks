@@ -8,6 +8,7 @@ block head
 
 block header-content
     a.navbar-text.needs-user.has-popover#devices(href="#"): i.glyphicon.glyphicon-phone
+    a.navbar-text.needs-user.has-popover#notifications(href="#"): i.glyphicon.glyphicon-bell
     .navbar-right
       p.navbar-text(data-bind="text: username")
       a.navbar-text.needs-user#logout(href="#"): i.glyphicon.glyphicon-eject
@@ -70,6 +71,12 @@ block content
         <small data-bind="text: version" />
       </div>
       <hr />
+    </div>
+
+  script#notificationsTemplate(type="text/html").
+    <div class="popoverNotifications">
+      <small><strong>Use notifications: </strong></small>
+      <input type="checkbox" class="switch-small" />
     </div>
 
   script#deleteTemplate(type="text/html").

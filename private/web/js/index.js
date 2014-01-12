@@ -9,6 +9,8 @@ require("./lib/bootstrap-switch");
 require("./lib/bootstrap-tagsinput");
 require("./lib/bootstrap-datetimepicker");
 
+var notifications = require("./model/notifications");
+
 var _query = URI(window.location.href).search(true),
     _viewModel,
     _dateFormat = "DD.MM.YYYY HH:mm";
@@ -91,6 +93,7 @@ function _createView()
 
     $("#logout").click(_onLogoutClick);
     $("#devices").click(_onDevicesClick);
+    $("#notifications").click(_onNotificationsClick);
     $("#addTask").on("click", _onAddTaskClick);
     $("#saveTask").on("click", _onSaveTaskClick);
 
@@ -119,6 +122,7 @@ function _createViewModel(authInfo)
     };
 
     _setupManualBindings();
+    notifications.schedule(tasks);
 }
 
 function _setupManualBindings()
@@ -396,6 +400,29 @@ function _onDevicesClick(event)
                 placement: "auto",
                 trigger: "manual"
             }).popover("show");
+        });
+}
+
+function _onNotificationsClick(event)
+{
+    event.preventDefault();
+
+    $(this).popover({
+        html: true,
+        content: $("#notificationsTemplate").html(),
+        placement: "auto",
+        trigger: "manual"
+    }).popover("show");
+
+    $('.popoverNotifications input[type="checkbox"]')
+        .prop("checked", notifications.isActive())
+        .on("change", function () {
+            var that = this;
+
+            notifications.setActive(this.checked)
+                .then(function () {
+                    that.checked = notifications.isActive();
+                });
         });
 }
 
