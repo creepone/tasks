@@ -29,7 +29,7 @@ block content
       .actions
         button.removeTask.close: i.glyphicon.glyphicon-remove
         button.editTask.close: i.glyphicon.glyphicon-pencil
-      h4.text-info.name(data-bind="text: name")
+      h4.name(data-bind="text: name, css: { 'text-info': !isDue(), 'text-danger': isDue() }")
       div(data-bind="if: $data.reminder")
         p: small.time(data-bind="text: reminder.timeText, attr: { 'data-important': reminder.important }")
       div(data-bind="foreach: categories")
@@ -72,6 +72,7 @@ block content
       </div>
       <hr />
     </div>
+    <small data-bind="visible: devices.length == 0">No devices configured.</small>
 
   script#notificationsTemplate(type="text/html").
     <div class="popoverNotifications">

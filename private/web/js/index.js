@@ -127,7 +127,7 @@ function _createViewModel(authInfo)
         tasks: tasks,
         editedTask: editedTask
     };
-
+    
     _setupManualBindings();
     notifications.schedule(tasks);
 }
@@ -190,6 +190,13 @@ function _setupManualBindings()
         setting = true;
         _viewModel.editedTask.categories(categories);
         setting = false;
+    });
+
+    notifications.dueTasksCount.subscribe(function (count) {
+        if (count === 0)
+            document.title = "Tasks";
+        else
+            document.title = "Tasks (" + count + ")";
     });
 }
 
@@ -273,8 +280,10 @@ function _arrayDiff(oldArray, newArray)
 function _convertFromServer(task)
 {
     task = $.extend({}, task);
-    if (task.reminder)
+    if (task.reminder) {
         task.reminder.timeText = moment(new Date(task.reminder.time)).format(_dateFormat);
+    }
+    task.isDue = ko.observable(false);
     return task;
 }
 
@@ -423,9 +432,6 @@ function _onDevicesClick(event)
 
     _services.getDeviceStats()
         .then(function (stats) {
-            if (stats.devices.length == 0)
-                return;
-
             stats.devices = stats.devices.map(_convertDeviceFromServer);
 
             $(that).popover({

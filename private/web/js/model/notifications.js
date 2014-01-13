@@ -2,6 +2,8 @@ var $ = require("../lib/jquery"),
     Q = require("../lib/q.min"),
     ko = require("../lib/knockout");
 
+var dueTasksCount = ko.observable(0);
+
 function showNotification(task) {
     var imageUrl = 'https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRS5s9iV9cTYdvz5d8OM4-W6q4JW2t0V_WZ1BVhUbD7RNWGeIHTRA';
     webkitNotifications.createNotification(imageUrl, "Tasks", task.name).show();
@@ -11,31 +13,37 @@ function showNotification(task) {
 function schedule(tasks) {
 
     // mark all past notifications as shown
-    forEachDueTask(function (task) { task.__shownReminder = true; })
+    forEachDueTask(function (task) { task.__shownReminder = true; });
 
-    setInterval(function () {
+    tasks.subscribe(updateNotifications);
+    setInterval(updateNotifications, 20000);
+    
+    function updateNotifications()
+    {
         if (!isActive())
             return;
 
         forEachDueTask(showNotification);
-
-    }, 30000);
-
+    }
 
     function forEachDueTask(callback)
     {
-        var currentTime = +new Date();
+        var count = 0,
+            currentTime = +new Date();
 
         tasks().forEach(function (task) {
 
-            if (!task.reminder || !task.reminder.important || task.__shownReminder)
+            if (task.reminder && task.reminder.time > currentTime)
                 return;
 
-            if (task.reminder.time > currentTime)
-                return;
+            task.isDue(true);
+            count++;
 
-            callback(task);
+            if (!task.__shownReminder && (task.reminder && task.reminder.important))
+                callback(task);
         });
+        
+        dueTasksCount(count);
     }
 }
 
@@ -71,5 +79,6 @@ function setActive(active) {
 $.extend(exports, {
     schedule: schedule,
     isActive: isActive,
-    setActive: setActive
+    setActive: setActive,
+    dueTasksCount: dueTasksCount
 });
