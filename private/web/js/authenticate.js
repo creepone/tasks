@@ -1,10 +1,22 @@
 var $ = require("./lib/jquery"),
-    URI = require("./lib/URI/URI");
+    URI = require("./lib/URI/URI"),
+    ko = require("./lib/knockout"),
+    Q = require("./lib/q.min");
 
 require("./lib/bootstrap");
 
+var services = require("./model/services"),
+    authentication = require("./model/authentication");
+
+var _viewModel;
+
 $(function()
 {
+    _createViewModel();
+    ko.applyBindings(_viewModel);
+
+    _createView();
+
     var query = URI(window.location.href).search(true);
 
     if (query.openid) {
@@ -12,37 +24,38 @@ $(function()
         _start(query.openid);
     }
     else {
-        _getAuthInfo(function (res) {
-            if (res.logged)
-                window.location.href = '/';
-        });
+        services.getAuthInfo()
+            .done(function (res) {
+                if (res.logged)
+                    window.location.href = '/';
+            }, _reportError);
     }
+});
 
+function _createView()
+{
     $("button[data-provider]").click(function () {
 
         // toggle the selected button
         $(".btn-info").each(function() { $(this).removeClass("btn-info"); });
         $(this).addClass("btn-info");
 
-        var provider = $(this).data("provider");
+        var providerId = $(this).data("provider"),
+            provider = authentication.providers[providerId];
 
         $(".with-account").hide();
 
-        switch (provider)
-        {
-            case "google":
-                return _start('https://www.google.com/accounts/o8/id');
-            case "yahoo":
-                return _start('http://me.yahoo.com/');
-        }
+        if (typeof provider.openid === "string")
+            return _start(provider.openid);
 
         $(".with-account").show();
         $("#account").focus();
     });
 
     $("form").submit(function (evt) {
-        var provider = $(".btn-info").data("provider");
-        var account = $("#account").val();
+        var providerId = $(".btn-info").data("provider"),
+            account = $("#account").val(),
+            provider = authentication.providers[providerId];
 
         // do not submit the form
         evt.preventDefault();
@@ -50,66 +63,38 @@ $(function()
         if (!account)
             return;
 
-        switch (provider)
-        {
-            case "aol":
-                return _start('http://openid.aol.com/' + account);
-            case "myopenid":
-                return _start('http://' + account + '.myopenid.com/');
-            case "openid":
-                return _start(account);
-        }
+        return _start(provider.openid(account));
     });
-});
+}
 
-function _start(provider)
+function _createViewModel()
+{
+    var providers = Object.keys(authentication.providers).map(function (provider) {
+        return { provider: provider, image: authentication.providers[provider].image };
+    });
+
+    _viewModel = {
+        providers: providers
+    };
+}
+
+function _start(openid)
 {
     $(".with-account").hide();
     $("#loader").show();
 
-    _authenticate({ provider: provider}, function (res) {
-        if (res.logged)
-            window.location.href = '/';
+    if (localStorage)
+        localStorage.setItem("openid", openid);
 
-        if (res.url)
-            window.location.href = res.url;
-    });
+    services.authenticate(openid)
+        .done(function (res) {
+            if (res.logged)
+                window.location.href = '/';
+
+            if (res.url)
+                window.location.href = res.url;
+        }, _reportError);
 }
-
-function _getAuthInfo(callback)
-{
-    $.ajax({
-        type: "GET",
-        url: "/authenticate/info",
-        dataType: "json",
-        success: function(data) {
-            if (data.error)
-                return _reportError(data.error);
-
-            callback(data);
-        },
-        failure: _reportError
-    });
-}
-
-function _authenticate(o, callback)
-{
-    var url = URI('/authenticate/init').addSearch({ openid: o.provider }).toString();
-
-    $.ajax({
-        type: "GET",
-        url: url,
-        dataType: "json",
-        success: function(data) {
-            if (data.error)
-                return _reportError(data.error);
-
-            callback(data);
-        },
-        failure: _reportError
-    });
-}
-
 
 function _reportError(error)
 {

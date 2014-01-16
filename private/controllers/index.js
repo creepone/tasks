@@ -5,12 +5,20 @@ var db = require("../db"),
 exports.render = function (req, res)
 {
     if (!req.session.userId)
-        return res.render("index");
+        return res.render("index", {
+            data: {
+                logged: false
+            }
+        });
 
     db.findTasks({ userId: new ObjectID(req.session.userId) }, { sort: [ "reminder.time" ], lazy: false })
         .done(function(tasks) {
             res.render("index", {
-                tasks: tasks
+                data: {
+                    logged: true,
+                    username: req.session.username,
+                    tasks: tasks
+                }
             });
         },
         function (err) {

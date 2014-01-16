@@ -9,12 +9,8 @@ block content
     #alert
 
     p.lead To use Tasks, you need to sign in or sign up with an OpenID provider.
-    .btn-group
-      button.btn.btn-default(type="button", data-provider="google"): img(src="/img/openid-google.png")
-      button.btn.btn-default(type="button", data-provider="yahoo"): img(src="/img/openid-yahoo.png")
-      button.btn.btn-default(type="button", data-provider="aol"): img(src="/img/openid-aol.png")
-      button.btn.btn-default(type="button", data-provider="myopenid"): img(src="/img/openid-myopenid.png")
-      button.btn.btn-default(type="button", data-provider="openid"): img(src="/img/openid.png")
+    .btn-group(data-bind="foreach: providers")
+      button.btn.btn-default(type="button", data-bind="attr: { 'data-provider': provider }"): img(data-bind="attr: { src: image }")
 
     form.with-account
       .input-group.col-xs-4

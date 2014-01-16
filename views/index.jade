@@ -4,7 +4,7 @@ block head
   title Tasks
   script(src="/js/index.js")
   link(rel="stylesheet",href="/styles/index.css")
-  script.tasks(type="text/json")!= JSON.stringify(tasks)
+  script.data(type="text/json")!= JSON.stringify(data)
 
 block header-content
     a.navbar-text.needs-user.has-popover#devices(href="#"): i.glyphicon.glyphicon-phone

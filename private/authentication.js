@@ -121,7 +121,7 @@ exports.web = {
 	authenticate: function (req, res)
 	{
 		if (req.session.openid)
-			return res.json({ logged: true });
+			return res.json({ logged: true, authInfo: { logged: true, name: req.session.username } });
 
 		var verifyUrl = 'http://' + req.headers.host + '/authenticate/verify?'
 			+ querystring.stringify({ openid: req.query.openid });

@@ -9,30 +9,37 @@ require("./lib/bootstrap-switch");
 require("./lib/bootstrap-tagsinput");
 require("./lib/bootstrap-datetimepicker");
 
-var notifications = require("./model/notifications");
+var notifications = require("./model/notifications"),
+    services = require("./model/services"),
+    authentication = require("./model/authentication");
 
 var _query = URI(window.location.href).search(true),
-    _viewModel,
+    _data, _viewModel,
     _dateFormat = "DD.MM.YYYY HH:mm";
 
 $(function() {
-    _services.getAuthInfo()
-        .done(function(authInfo) {
-            if (!authInfo.logged)
-                return _authenticate();
+    _data = JSON.parse($(".data").html());
 
-            _createView();
-            _createViewModel(authInfo);
+    if (!_data.logged) {
+        // do not automatically re-authenticate (e.g. after logout)
+        var autoReauthenticate = _query.autoAuth !== "0";
+        authentication.assertAuthenticated(autoReauthenticate).done(function () {
+            window.location.reload();
+        });
+        return;
+    }
 
-            ko.applyBindings(_viewModel);
-        }, _reportError);
+    _createView();
+    _createViewModel();
+    ko.applyBindings(_viewModel);
 });
+
 
 function _createView()
 {
     // reveal all the user-dependent UI
     $("#loader").hide();
-    $(".needs-user").show();
+    $(".needs-user").removeClass("needs-user");
 
     $('input[type="checkbox"]').bootstrapSwitch();
 
@@ -107,9 +114,9 @@ function _createView()
     $("#addTask").focus();
 }
 
-function _createViewModel(authInfo)
+function _createViewModel()
 {
-    var tasks = JSON.parse($(".tasks").html());
+    var tasks = _data.tasks;
     tasks = ko.observableArray(tasks.map(_convertFromServer));
 
     var editedTask = {
@@ -123,7 +130,7 @@ function _createViewModel(authInfo)
     };
 
     _viewModel = {
-        username: authInfo.name,
+        username: _data.username,
         tasks: tasks,
         editedTask: editedTask
     };
@@ -345,7 +352,9 @@ function _onAddTaskClick()
     task.reminderImportant(false);
     task.reminderTime(null);
 
-    $(".modal").modal("show");
+    authentication.assertAuthenticated().done(function () {
+        $(".modal").modal("show");
+    });
 }
 
 function _onEditTaskClick()
@@ -367,7 +376,9 @@ function _onEditTaskClick()
     else
         taskVm.reminderTime(null);
 
-    $(".modal").modal("show");
+    authentication.assertAuthenticated().done(function () {
+        $(".modal").modal("show");
+    });
 }
 
 function _onSaveTaskClick()
@@ -384,7 +395,7 @@ function _onSaveTaskClick()
         return;
     }
 
-    _services.submitPatch(patch)
+    services.submitPatch(patch)
         .done(function(data) {
             $(".modal").modal("hide");
 
@@ -406,7 +417,7 @@ function _onRemoveTaskClick()
         taskId: taskId
     };
 
-    _services.submitPatch(patch)
+    services.submitPatch(patch)
         .done(function () {
             $task.find(".removeTask").popover("hide");
             $task.fadeOut(function () {
@@ -419,7 +430,7 @@ function _onLogoutClick(event)
 {
     event.preventDefault();
 
-    _services.logout()
+    services.logout()
         .done(function() {
             window.location.href = URI(window.location.href).addSearch({ autoAuth: 0 }).toString();
         }, _reportError);
@@ -430,7 +441,7 @@ function _onDevicesClick(event)
     var that = this;
     event.preventDefault();
 
-    _services.getDeviceStats()
+    services.getDeviceStats()
         .then(function (stats) {
             stats.devices = stats.devices.map(_convertDeviceFromServer);
 
@@ -466,58 +477,6 @@ function _onNotificationsClick(event)
         });
 }
 
-
-function _authenticate()
-{
-    if (_query.autoAuth === "0")
-    {
-        window.location.href = "/authenticate";
-        return;
-    }
-
-    // try to auto-authenticate with Google and Yahoo if possible
-    var providers = ["https://www.google.com/accounts/o8/id", "http://me.yahoo.com/"];
-
-    Q.allSettled(providers.map(_services.authenticate))
-        .then(function(results) {
-            var toAuth = results
-                .filter(function (r) { return r.value && r.value.url; })
-                .map(function (r) { return authenticateInIframe(r.value.url); });
-
-            return Q.allSettled(toAuth);
-        })
-        .then(function() {
-            return _services.getAuthInfo();
-        })
-        .done(function(authInfo) {
-            if (authInfo && authInfo.logged)
-                window.location.reload();
-            else
-                window.location.href = "/authenticate";
-        },
-        function() {
-             window.location.href = "/authenticate";
-        });
-
-    function authenticateInIframe(url)
-    {
-        var deferred = Q.defer();
-        $("<iframe />").hide().attr({ src: url }).on("load", function () { deferred.resolve(); }).appendTo("body");
-        return deferred.promise.timeout(2000);
-    }
-}
-
-function _ajax(o)
-{
-    return Q($.ajax(o))
-        .then(function(data) {
-            if (data.error)
-                throw new Error(data.error);
-            else
-                return data;
-        });
-}
-
 function _reportError(error)
 {
     $("#alert").html("<div class=\"alert alert-danger fade in\">" +
@@ -527,44 +486,3 @@ function _reportError(error)
     setTimeout(function () { $("#alert .alert").alert("close"); }, 2000);
     console.log(error);
 }
-
-var _services = {
-    getAuthInfo: function () {
-        return _ajax({
-            type: "GET",
-            url: "/authenticate/info",
-            dataType: "json"
-        });
-    },
-    logout: function () {
-        return _ajax({
-            type: "GET",
-            url: "/logout",
-            dataType: "json"
-        });
-    },
-    submitPatch: function (patch) {
-        return _ajax({
-            type: "POST",
-            url: "/sync/submit",
-            dataType: "json",
-            data: JSON.stringify({ patch: patch }),
-            contentType: "application/json; charset=utf-8"
-        });
-    },
-    authenticate: function (provider) {
-        var url = URI('/authenticate/init').addSearch({ openid: provider }).toString();
-        return _ajax({
-            type: "GET",
-            url: url,
-            dataType: "json"
-        });
-    },
-    getDeviceStats: function () {
-        return _ajax({
-            type: "GET",
-            url: "/devices/stats",
-            dataType: "json"
-        });
-    }
-};
