@@ -314,28 +314,36 @@ function _renderTemplate(name, data)
 }
 
 function _transformDate(input)
-{
+{ 
+	var patterns = {
+		offsetMinutes: /^\+\d+$/,
+		offsetHoursMinutes: /^\+(\d){1,2}:\d\d$/,
+		todayHoursMinutes: /^(\d){1,2}:\d\d$/
+	};
+	
     var val = $(input).val();
-
-    if (!val || !/^\+\d+(:\d{2}){0,2}$/.test(val))
+    if (!val || !Object.keys(patterns)
+		.some(function (k) { return patterns[k].test(val); }))
         return;
 
     var shiftedVal = val;
 
-    // + minutes
-    if (/^\+\d+$/.test(val))
+    if (patterns.offsetMinutes.test(val))
     {
         var minutes = parseInt(val, 10);
         shiftedVal = moment()
             .add({ minutes: minutes });
     }
-    else
+    else if (patterns.offsetHoursMinutes.test(val))
     {
-        // + hours:minutes
         var parsed = moment(val, "HH:mm");
         shiftedVal = moment()
             .add({ hours: parsed.hours(), minutes: parsed.minutes() });
     }
+    else if (patterns.todayHoursMinutes.test(val))
+	{
+		shiftedVal = moment(val, "HH:mm");
+	}
 
     _viewModel.editedTask.reminderTime(shiftedVal);
 }
