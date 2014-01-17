@@ -410,7 +410,8 @@ function _onSaveTaskClick()
             if (task)
                 _viewModel.tasks.remove(task);
 
-            _viewModel.tasks.push(_convertFromServer(data.task));
+            if (data.task)
+                _viewModel.tasks.push(_convertFromServer(data.task));
             _viewModel.tasks.sort(function (a, b) { return ((a.reminder && a.reminder.time) || 0) - ((b.reminder && b.reminder.time) || 0); });
         }, _reportError);
 }

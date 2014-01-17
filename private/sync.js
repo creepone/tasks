@@ -231,7 +231,9 @@ function _mergePatches(userId)
 
                 editPatches.forEach(function (patch) {
                     var o = taskMap[patch.taskId.toString()],
-                        task = o.task;
+                        task = o && o.task;
+
+                    if (!o) return;
 
                     if (task.lastClientPatchId && task.lastClientPatchId.getTimestamp() >= patch.clientPatchId.getTimestamp())
                         o.fullMerge = true;

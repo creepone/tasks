@@ -228,7 +228,7 @@ function _getDb()
     if (_db)
         deferred.resolve(_db);
     else
-        mongodb.Db.connect(process.env.MONGOHQ_URL || 'mongodb://localhost/local', function (err, db) {
+        mongodb.Db.connect(process.env.MONGOHQ_URL || 'mongodb://localhost/tasks', function (err, db) {
             if (err) return deferred.reject(new Error(err));
 
             _db = db;
