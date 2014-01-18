@@ -35,6 +35,10 @@ $.extend(exports, {
                             window.location.href = "/authenticate";
                             throw new Error("The session expired, redirecting...");
                         }
+                    },
+                    function (err) {
+                        window.location.href = "/authenticate";
+                        throw err;
                     });
             });
     }
