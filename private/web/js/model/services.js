@@ -1,14 +1,19 @@
 var $ = require("../lib/jquery"),
     URI = require("../lib/URI/URI"),
-    Q = require("../lib/q.min");
+    Q = require("../lib/q.min"),
+    authentication = require("./authentication");
 
 function ajax(o) {
     return Q($.ajax(o))
         .then(function (data) {
-
-            // todo: handle session expiration here - authenticate and retry if configured so
-
-            if (data.error)
+            if (data.error === "SessionExpired" && o.retryAuthenticate) {
+                return authentication.assertAuthenticated()
+                    .then(function () {
+                        o.retryAuthenticate = false;
+                        return ajax(o);
+                    });
+            }
+            else if (data.error)
                 throw new Error(data.error);
             else
                 return data;
@@ -35,7 +40,8 @@ $.extend(exports, {
         return ajax({
             type: "GET",
             url: "/devices/stats",
-            dataType: "json"
+            dataType: "json",
+            retryAuthenticate: true
         });
     },
     logout: function () {
@@ -51,7 +57,8 @@ $.extend(exports, {
             url: "/sync/submit",
             dataType: "json",
             data: JSON.stringify({ patch: patch }),
-            contentType: "application/json; charset=utf-8"
+            contentType: "application/json; charset=utf-8",
+            retryAuthenticate: true
         });
     }
 });

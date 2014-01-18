@@ -65,7 +65,7 @@ exports.web =
     submit: function (req, res)
     {
         if (!req.session.userId)
-            return res.send({ error: "Session expired."});
+            return res.send({ error: "SessionExpired"});
 
         var userId = new ObjectID(req.session.userId),
             patch = req.body.patch;
