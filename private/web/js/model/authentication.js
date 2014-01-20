@@ -68,7 +68,10 @@ function autoAuthenticate()
     function authenticateInIframe(url)
     {
         var deferred = Q.defer();
-        $("<iframe />").hide().attr({ src: url }).on("load", function () { deferred.resolve(); }).appendTo("body");
+        $("<iframe />").hide().attr({ src: url }).on("load", function () {
+            $(this).remove();
+            deferred.resolve();
+        }).appendTo("body");
         return deferred.promise.timeout(2000);
     }
 }

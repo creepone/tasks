@@ -18,6 +18,10 @@ var _query = URI(window.location.href).search(true),
     _dateFormat = "DD.MM.YYYY HH:mm";
 
 $(function() {
+    // we could be running in an iframe after a silent reauthentication. just do nothing in that case
+    if (window !== window.top)
+       return;
+
     _data = JSON.parse($(".data").html());
 
     if (!_data.logged) {
