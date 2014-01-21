@@ -7,6 +7,7 @@ var dueTasksCount = ko.observable(0);
 function showNotification(task) {
     var imageUrl = 'https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRS5s9iV9cTYdvz5d8OM4-W6q4JW2t0V_WZ1BVhUbD7RNWGeIHTRA';
     webkitNotifications.createNotification(imageUrl, "Tasks", task.name).show();
+    console.log("Showing notification at " + new Date(), task);
     task.__shownReminder = true;
 }
 
