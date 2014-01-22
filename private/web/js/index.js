@@ -65,6 +65,8 @@ function _createView()
             event.stopPropagation();
             _transformDate(this);
         }
+        else if (event.keyCode == 9)
+            _transformDate(this);
     });
 
     $(document).on("focus", ".bootstrap-tagsinput input", function () {
@@ -322,7 +324,8 @@ function _transformDate(input)
 	var patterns = {
 		offsetMinutes: /^\+\d+$/,
 		offsetHoursMinutes: /^\+(\d){1,2}:\d\d$/,
-		todayHoursMinutes: /^(\d){1,2}:\d\d$/
+		todayHoursMinutes: /^(today)?\s+(\d){1,2}:\d\d$/,
+        tomorrowHoursMinute: /^tomorrow\s+(\d){1,2}:\d\d$/i
 	};
 	
     var val = $(input).val();
@@ -348,6 +351,14 @@ function _transformDate(input)
 	{
 		shiftedVal = moment(val, "HH:mm");
 	}
+    else if (patterns.tomorrowHoursMinute.test(val))
+    {
+        var parsed = moment(val, "HH:mm");
+        shiftedVal = moment()
+            .add({ days: 1 })
+            .startOf("day")
+            .add({ hours: parsed.hours(), minutes: parsed.minutes() });
+    }
 
     _viewModel.editedTask.reminderTime(shiftedVal);
 }
