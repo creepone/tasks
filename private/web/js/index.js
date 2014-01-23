@@ -324,7 +324,7 @@ function _transformDate(input)
 	var patterns = {
 		offsetMinutes: /^\+\d+$/,
 		offsetHoursMinutes: /^\+(\d){1,2}:\d\d$/,
-		todayHoursMinutes: /^(today)?\s+(\d){1,2}:\d\d$/,
+		todayHoursMinutes: /^(today\s+)?(\d){1,2}:\d\d$/,
         tomorrowHoursMinute: /^tomorrow\s+(\d){1,2}:\d\d$/i
 	};
 	
