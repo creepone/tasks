@@ -10,6 +10,7 @@ var routes = [
     { path: "/ios/register", method: authentication.device.register, verb: "POST" },
     { path: "/ios/sync", method: sync.device.sync, verb: "POST" },
     { path: "/ios/sync/acknowledge", method: sync.device.acknowledge, verb: "POST" },
+    { path: "/ios/sync/setApnToken", method: sync.device.setApnToken, verb: "POST" },
 
     // web services
     { path: "/authenticate/init", method: authentication.web.authenticate },

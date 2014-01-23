@@ -2,6 +2,7 @@ var _ = require("underscore"),
     db = require("./db"),
     Q = require("q"),
     ObjectID = require("mongodb").ObjectID,
+    apn = require("apn"),
     textMerge = require("./tools/textMerge");
 
 exports.device =
@@ -57,6 +58,30 @@ exports.device =
                 res.send({ error: "Could not acknowledge the sync." });
             });
 
+    },
+
+    setApnToken: function (req, res)
+    {
+        db.getDevice({ token: req.body.token })
+            .then(function (device) {
+                if (!device)
+                    throw new Error("Device not found.");
+
+                return db.updateDevice(
+                {
+                    _id: device._id
+                },
+                {
+                    $set: { apnToken: req.body.apnToken }
+                });
+            })
+            .done(function () {
+                res.json({});
+            },
+            function (err) {
+                console.log(err);
+                res.send({ error: "Could not set the device APN token." });
+            });
     }
 };
 
@@ -152,7 +177,17 @@ function _insertPatches(device, patches)
         })
         .then(function () {
             return Q.all(inserts);
-        });
+        })
+        .then(function () {
+            var devicesToNotify = devices.filter(function (otherDevice) {
+                if (device._id && otherDevice._id.equals(device._id))
+                    return false;
+                return !!otherDevice.apnToken;
+            });
+
+            if (devicesToNotify.length > 0)
+                return _notifyDevices(devicesToNotify);
+        })
 }
 
 function _getDevicePatches(device)
@@ -429,4 +464,22 @@ function _mergePatches(userId)
                     });
             });
     }
+}
+
+function _notifyDevices(devices)
+{
+    var apnConn = new apn.Connection({
+        address: "gateway.sandbox.push.apple.com",
+        certData: new Buffer(process.env.CERT_PEM, "base64"),
+        keyData: new Buffer(process.env.KEY_PEM, "base64")
+    });
+
+    devices.forEach(function (device) {
+        var apnDevice = new apn.Device(device.apnToken);
+        var note = new apn.Notification();
+        note.setExpiry(Math.floor(Date.now() / 1000) + 24 * 3600); // valid for 1 hour
+        note.setContentAvailable(true);
+        note.setSound("");
+        apnConn.pushNotification(note, apnDevice);
+    });
 }
