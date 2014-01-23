@@ -1,4 +1,5 @@
 var openid = require("openid"),
+    _ = require("underscore"),
 	querystring = require("querystring"),
 	uuid = require("node-uuid"),
 	db = require("./db");
@@ -46,28 +47,27 @@ exports.device = {
                 {
                     if (result)
                     {
-                        _registerDevice({
+                        return _registerDevice({
                             name: req.query.device,
                             userId: result._id
-                        }, onRegistered);
+                        })
+                        .then(function (device) {
+                                res.render("ios/redirect", {
+                                    url: "http://done?" + querystring.stringify({ token: device.token })
+                                });
+                            });
                     }
                     else
                     {
-                        res.render('ios/register', {
+                        return res.render("ios/register", {
                             openid: req.query.openid,
                             claimedIdentifier: claimedIdentifier,
                             device: req.query.device
                         });
                     }
-                }, _reportDeviceError.bind(null, res));
+                })
+                .fail(_reportDeviceError.bind(null, res));
 		});
-
-		function onRegistered(error, result)
-		{
-			res.render('ios/redirect', {
-				url: 'http://done?' + querystring.stringify({ token: result.token })
-			});
-		}
 	},
 	
 	/*
@@ -90,7 +90,8 @@ exports.device = {
                 res.writeHead(302, { Location : authenticateUrl });
                 res.end();
 
-            }, _reportDeviceError.bind(null, res));
+            })
+            .fail(_reportDeviceError.bind(null, res));
 	}
 }
 
@@ -172,8 +173,8 @@ exports.web = {
                             claimedIdentifier: claimedIdentifier
                         });
                     }
-                },
-                function (err) {
+                })
+                .fail(function (err) {
 					console.log(err);
                     res.writeHead(302, { Location: "/error" });
                     res.end();
@@ -197,8 +198,8 @@ exports.web = {
                 var authenticateUrl = '/authenticate?' + querystring.stringify({ openid: req.body.openid });
                 res.writeHead(302, { Location: authenticateUrl });
                 res.end();
-            },
-            function (){
+            })
+            .fail(function (){
                 res.writeHead(302, { Location: "/error" });
                 res.end();
             });
@@ -215,13 +216,15 @@ exports.web = {
 
 // helper methods
 
-function _registerDevice(o, callback)
-{	
-	o.token = uuid.v4();
-    o.toSync = [];
-
-    db.insertDevice(o)
-        .then(callback.bind(null, null, o), callback);
+function _registerDevice(o)
+{
+    return db.insertDevice(_.extend(o, {
+        token: uuid.v4(),
+        toSync: []
+    }))
+    .then(function () {
+        return o;
+    });
 }
 
 function _reportDeviceError(res)
