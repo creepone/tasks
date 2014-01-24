@@ -13,12 +13,17 @@ function showNotification(task) {
 
 function schedule(tasks) {
 
-    // mark all past notifications as shown
-    forEachDueTask(function (task) { task.__shownReminder = true; });
+    markAllDueAsShown();
 
-    tasks.subscribe(updateNotifications);
+    tasks.subscribe(onTasksModified);
     setInterval(updateNotifications, 20000);
-    
+
+    function onTasksModified()
+    {
+        markAllDueAsShown();
+        updateNotifications();
+    }
+
     function updateNotifications()
     {
         if (!isActive())
@@ -45,6 +50,12 @@ function schedule(tasks) {
         });
         
         dueTasksCount(count);
+    }
+
+    function markAllDueAsShown()
+    {
+        // mark all past notifications as shown
+        forEachDueTask(function (task) { task.__shownReminder = true; });
     }
 }
 
