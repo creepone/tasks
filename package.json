@@ -9,18 +9,16 @@
     "underscore": "1.4.x",
     "jade": "1.0.x",
     "q": "0.9.x",
-    "apn": "~1.4.4"
-  },
-  "engines": {
-    "node": "0.10.x",
-    "npm": "1.3.x"
-  },
-  "devDependencies": {
+    "apn": "~1.4.4",
     "browserify": "git+http://github.com/creepone/node-browserify.git#master",
-    "browserify-shim": "git+http://github.com/creepone/browserify-shim.git#master",
+    "browserify-shim": "~3.2.2",
     "uglify-js": "~2.4.8",
     "less": "~1.6.0",
     "grunt": "~0.4.2",
     "grunt-contrib-watch": "~0.5.3"
+  },
+  "engines": {
+    "node": "0.10.x",
+    "npm": "1.3.x"
   }
 }

@@ -25,4 +25,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.registerTask("default", ["build:scripts", "build:stylesheets"]);
     grunt.registerTask("debug", ["build:scripts:debug", "build:stylesheets:debug"]);
+
+    grunt.registerTask("heroku", ["default"]);
 };

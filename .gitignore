@@ -7,3 +7,5 @@ node_modules/uglify-js
 node_modules/less
 node_modules/grunt
 node_modules/grunt-contrib-watch
+public/js
+public/styles
