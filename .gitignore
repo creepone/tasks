@@ -1,11 +1,5 @@
 .DS_Store
 .idea
 node_modules/.bin
-node_modules/browserify
-node_modules/browserify-shim
-node_modules/uglify-js
-node_modules/less
-node_modules/grunt
-node_modules/grunt-contrib-watch
 public/js
 public/styles
