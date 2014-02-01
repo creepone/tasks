@@ -62,7 +62,8 @@ exports.device = {
                         return res.render("ios/register", {
                             openid: req.query.openid,
                             claimedIdentifier: claimedIdentifier,
-                            device: req.query.device
+                            device: req.query.device,
+                            codeRequired: !!process.env.APP_REGISTRATION_CODE
                         });
                     }
                 })
@@ -80,6 +81,10 @@ exports.device = {
 			openid: req.body.claimedIdentifier,
 			name: req.body.name
 		};
+
+        var registrationCode = process.env.APP_REGISTRATION_CODE || "";
+        if (registrationCode && req.body.registrationCode !== registrationCode)
+            return _reportDeviceError(res);
 
         db.insertUser(o)
             .then(function ()
@@ -170,7 +175,8 @@ exports.web = {
                     {
                         res.render("register", {
                             openid: req.query.openid,
-                            claimedIdentifier: claimedIdentifier
+                            claimedIdentifier: claimedIdentifier,
+                            codeRequired: !!process.env.APP_REGISTRATION_CODE
                         });
                     }
                 })
@@ -192,6 +198,12 @@ exports.web = {
 			openid: req.body.claimedIdentifier,
 			name: req.body.name
 		};
+
+        var registrationCode = process.env.APP_REGISTRATION_CODE || "";
+        if (registrationCode && req.body.registrationCode !== registrationCode) {
+            res.writeHead(302, { Location: "/error" });
+            return res.end();
+        }
 
         db.insertUser(o)
             .then(function() {

@@ -3,7 +3,7 @@ extends layout
 block head
   title Tasks Registration
   script(src="/js/register.js")
-  link(rel="stylesheet",href="/styles/layout.css")
+  link(rel="stylesheet",href="/styles/register.css")
 
 block content
   p.lead Looks like you are using Tasks for the first time.
@@ -16,3 +16,6 @@ block content
       input(name="claimedIdentifier",type="hidden",value=claimedIdentifier)
       .input-group-btn
         button.btn.btn-primary(type="submit",disabled) Register
+    if codeRequired
+      .col-xs-4.registration-code
+        input.form-control(name="registrationCode",type="text",placeholder="Registration code")

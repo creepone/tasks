@@ -6,7 +6,7 @@ var app = express();
 
 app.configure(function () {
 	app.set("view engine", "jade");
-    app.set("views", __dirname + "/views");
+    app.set("views", __dirname + "/private/web/views");
     app.engine("html", jade.__express);
 
     app.use(express.static(__dirname + "/public"));
