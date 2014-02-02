@@ -11,7 +11,8 @@ require("./lib/bootstrap-datetimepicker");
 
 var notifications = require("./model/notifications"),
     services = require("./model/services"),
-    authentication = require("./model/authentication");
+    authentication = require("./model/authentication"),
+    tasks = require("./model/tasks");
 
 var _query = URI(window.location.href).search(true),
     _data, _viewModel,
@@ -122,9 +123,6 @@ function _createView()
 
 function _createViewModel()
 {
-    var tasks = _data.tasks;
-    tasks = ko.observableArray(tasks.map(_convertFromServer));
-
     var editedTask = {
         _id: ko.observable(),
         name: ko.observable(),
@@ -137,12 +135,11 @@ function _createViewModel()
 
     _viewModel = {
         username: _data.username,
-        tasks: tasks,
+        tasks: tasks.init(_data.tasks),
         editedTask: editedTask
     };
     
     _setupManualBindings();
-    notifications.schedule(tasks);
 }
 
 function _setupManualBindings()
@@ -205,12 +202,15 @@ function _setupManualBindings()
         setting = false;
     });
 
-    notifications.dueTasksCount.subscribe(function (count) {
+    updateNotificationsCount(notifications.dueTasksCount());
+    notifications.dueTasksCount.subscribe(updateNotificationsCount);
+
+    function updateNotificationsCount(count) {
         if (count === 0)
             document.title = "Tasks";
         else
             document.title = "Tasks (" + count + ")";
-    });
+    }
 }
 
 function _createPatch(editedTask, task)
@@ -288,16 +288,6 @@ function _arrayDiff(oldArray, newArray)
     if (toRemove.length > 0)
         res.remove = toRemove;
     return res;
-}
-
-function _convertFromServer(task)
-{
-    task = $.extend({}, task);
-    if (task.reminder) {
-        task.reminder.timeText = moment(new Date(task.reminder.time)).format(_dateFormat);
-    }
-    task.isDue = ko.observable(false);
-    return task;
 }
 
 function _convertDeviceFromServer(device)
@@ -385,7 +375,7 @@ function _onEditTaskClick()
     var $task = $(this).closest(".task");
     var taskId = $task.attr("data-id");
 
-    var task = _viewModel.tasks().filter(function (t) { return t._id == taskId; })[0];
+    var task = _viewModel.tasks.getById(taskId);
     var taskVm = _viewModel.editedTask;
 
     taskVm._id(taskId);
@@ -407,7 +397,7 @@ function _onEditTaskClick()
 function _onSaveTaskClick()
 {
     var editedTask = ko.toJS(_viewModel.editedTask);
-    var task = _viewModel.tasks().filter(function (t) { return t._id == editedTask._id; })[0];
+    var task = _viewModel.tasks.getById(editedTask._id);
 
     var patch = _createPatch(editedTask, task);
 
@@ -426,8 +416,8 @@ function _onSaveTaskClick()
                 _viewModel.tasks.remove(task);
 
             if (data.task)
-                _viewModel.tasks.push(_convertFromServer(data.task));
-            _viewModel.tasks.sort(function (a, b) { return ((a.reminder && a.reminder.time) || 0) - ((b.reminder && b.reminder.time) || 0); });
+                _viewModel.tasks.insert(data.task);
+
         }, _reportError);
 }
 
@@ -445,7 +435,7 @@ function _onRemoveTaskClick()
         .done(function () {
             $task.find(".removeTask").popover("hide");
             $task.fadeOut(function () {
-                _viewModel.tasks.remove(function (t) { return t._id == taskId });
+                _viewModel.tasks.removeById(taskId);
             });
         }, _reportError);
 }

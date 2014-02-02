@@ -112,6 +112,21 @@ exports.web =
                 console.log(err);
                 res.send({ error: "Could not submit the change." });
             });
+    },
+
+    getTasks: function (req, res)
+    {
+        if (!req.session.userId)
+            return res.send({ error: "SessionExpired"});
+
+        db.findTasks({ userId: new ObjectID(req.session.userId) }, { sort: [ "reminder.time" ], lazy: false })
+            .done(function(tasks) {
+                res.send({ tasks: tasks });
+            },
+            function (err) {
+                console.log(err);
+                res.send({ error: "Could not load the tasks." });
+            });
     }
 };
 

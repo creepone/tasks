@@ -18,6 +18,7 @@ var routes = [
     { path: "/authenticate/info", method: authentication.web.info },
     { path: "/logout", method: authentication.web.logout },
     { path: "/sync/submit", method: sync.web.submit, verb: "POST" },
+    { path: "/sync/tasks", method: sync.web.getTasks },
     { path: "/register", method: authentication.web.register, verb: "POST" },
     { path: "/devices/stats", method: stats.deviceStats },
     

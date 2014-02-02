@@ -2,13 +2,14 @@ var $ = require("../lib/jquery"),
     Q = require("../lib/q.min"),
     ko = require("../lib/knockout");
 
-var dueTasksCount = ko.observable(0);
+var dueTasksCount = ko.observable(0),
+    _obsoleteReminders = [];
 
 function showNotification(task) {
     var imageUrl = 'https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRS5s9iV9cTYdvz5d8OM4-W6q4JW2t0V_WZ1BVhUbD7RNWGeIHTRA';
     webkitNotifications.createNotification(imageUrl, "Tasks", task.name).show();
     console.log("Showing notification at " + new Date(), task);
-    task.__shownReminder = true;
+    _obsoleteReminders.push(task);
 }
 
 function schedule(tasks) {
@@ -16,6 +17,8 @@ function schedule(tasks) {
     markAllDueAsShown();
 
     tasks.subscribe(onTasksModified);
+
+    updateNotifications();
     setInterval(updateNotifications, 20000);
 
     function onTasksModified()
@@ -26,14 +29,8 @@ function schedule(tasks) {
 
     function updateNotifications()
     {
-        if (!isActive())
-            return;
+        var active = isActive();
 
-        forEachDueTask(showNotification);
-    }
-
-    function forEachDueTask(callback)
-    {
         var count = 0,
             currentTime = +new Date();
 
@@ -45,17 +42,26 @@ function schedule(tasks) {
             task.isDue(true);
             count++;
 
-            if (!task.__shownReminder && (task.reminder && task.reminder.important))
-                callback(task);
+            if (active && !isReminderObsolete(task) && task.reminder && task.reminder.important)
+                showNotification(task);
         });
-        
+
         dueTasksCount(count);
     }
 
     function markAllDueAsShown()
     {
         // mark all past notifications as shown
-        forEachDueTask(function (task) { task.__shownReminder = true; });
+
+        var timeBorder = +new Date() - 60000;
+
+        tasks().forEach(function (task) {
+            if (task.reminder && task.reminder.time > timeBorder)
+                return;
+
+            if (!isReminderObsolete(task) && (task.reminder && task.reminder.important))
+                _obsoleteReminders.push(task);
+        });
     }
 }
 
@@ -86,7 +92,18 @@ function setActive(active) {
             return deferred.promise;
         }
     }
+
+    return Q(true);
 }
+
+function isReminderObsolete(task) {
+    return _obsoleteReminders.some(function (obsoleteTask) {
+        return obsoleteTask._id === task._id
+            && obsoleteTask.reminder && task.reminder
+            && obsoleteTask.reminder.time === task.reminder.time;
+    });
+}
+
 
 $.extend(exports, {
     schedule: schedule,

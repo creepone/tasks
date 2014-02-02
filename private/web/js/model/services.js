@@ -44,6 +44,14 @@ $.extend(exports, {
             retryAuthenticate: true
         });
     },
+    getTasks: function () {
+        return ajax({
+            type: "GET",
+            url: "/sync/tasks",
+            dataType: "json",
+            retryAuthenticate: true
+        });
+    },
     logout: function () {
         return ajax({
             type: "GET",
