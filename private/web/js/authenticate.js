@@ -1,34 +1,34 @@
 var $ = require("./lib/jquery"),
-    URI = require("./lib/URI/URI"),
     ko = require("./lib/knockout"),
-    Q = require("./lib/q.min");
+    Q = require("./lib/q.min"),
+    services = require("./model/services"),
+    authentication = require("./model/authentication"),
+    tools = require("./model/tools");
 
 require("./lib/bootstrap");
-
-var services = require("./model/services"),
-    authentication = require("./model/authentication");
 
 var _viewModel;
 
 $(function()
 {
+    var query = tools.parseUri(location).queryKey;
+    var openid = query.openid || (localStorage && localStorage.getItem("openid"));
+
     _createViewModel();
     ko.applyBindings(_viewModel);
 
     _createView();
 
-    var query = URI(window.location.href).search(true);
-
-    if (query.openid) {
+    if (openid) {
         $("body").hide();
-        _start(query.openid);
+        _start(openid);
     }
     else {
         services.getAuthInfo()
             .done(function (res) {
                 if (res.logged)
                     window.location.href = '/';
-            }, _reportError);
+            }, tools.reportError);
     }
 });
 
@@ -93,15 +93,5 @@ function _start(openid)
 
             if (res.url)
                 window.location.href = res.url;
-        }, _reportError);
-}
-
-function _reportError(error)
-{
-    $("#alert").html("<div class=\"alert alert-error fade in\">" +
-      "<button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>" +
-      "Error occured when communicating with the server. </div>");
-
-    setTimeout(function () { $("#alert .alert").alert("close"); }, 2000);
-    console.log(error);
+        }, tools.reportError);
 }

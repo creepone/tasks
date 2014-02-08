@@ -9,78 +9,47 @@ exports.device =
 {
     sync: function (req, res)
     {
-        db.getDevice({ token: req.body.token })
-            .then(function (device) {
-                if (!device)
-                    throw new Error("Device not found.");
-                
-                return _insertPatches(device, req.body.patches)
-                    .then(function () {
-                        return _mergePatches(device.userId);
-                    })
-                    .then(function () {
-                        return _getDevicePatches(device);
-                    })
-                    .done(function (patches){
-                        res.json({ patches: patches, toAcknowledge: device.toSync });
-                    },
-                    function (err) {
-                        console.log(err);
-                        res.send({ error: "Could not sync." });
-                    });
+        var device = req.device;
+
+        return _insertPatches(device, req.body.patches)
+            .then(function () {
+                return _mergePatches(device.userId);
+            })
+            .then(function () {
+                return _getDevicePatches(device);
+            })
+            .then(function (patches){
+                res.json({ patches: patches, toAcknowledge: device.toSync });
             });
     },
 
     acknowledge: function (req, res)
     {
-        db.getDevice({ token: req.body.token })
-            .then(function (device) {
-                if (!device)
-                    throw new Error("Device not found.");
+        var device = req.device;
 
-                var syncedIds = req.body.syncedIds.map(function (i) { return new ObjectID(i); });
-                var version = req.body.lastPatchId && new ObjectID(req.body.lastPatchId);
+        var syncedIds = req.body.syncedIds.map(function (i) { return new ObjectID(i); });
+        var version = req.body.lastPatchId && new ObjectID(req.body.lastPatchId);
 
-                return db.updateDevice(
-                {
-                    _id: device._id
-                },
-                {
-                    $pullAll: { toSync: syncedIds },
-                    $set: { version: version }
-                });
+        return db.updateDevice({ _id: device._id },
+            {
+                $pullAll: { toSync: syncedIds },
+                $set: { version: version }
             })
-            .done(function () {
+            .then(function () {
                 res.json({});
-            },
-            function (err) {
-                console.log(err);
-                res.send({ error: "Could not acknowledge the sync." });
             });
-
     },
 
     setApnToken: function (req, res)
     {
-        db.getDevice({ token: req.body.token })
-            .then(function (device) {
-                if (!device)
-                    throw new Error("Device not found.");
+        var device = req.device;
 
-                return db.updateDevice(
-                {
-                    _id: device._id
-                },
-                {
-                    $set: { apnToken: req.body.apnToken }
-                });
+        return db.updateDevice({ _id: device._id },
+            {
+                $set: { apnToken: req.body.apnToken }
             })
-            .done(function () {
+            .then(function() {
                 res.json({});
-            },
-            function (err) {
-                console.log(err);
-                res.send({ error: "Could not set the device APN token." });
             });
     }
 };
@@ -89,13 +58,10 @@ exports.web =
 {
     submit: function (req, res)
     {
-        if (!req.session.userId)
-            return res.send({ error: "SessionExpired"});
-
         var userId = new ObjectID(req.session.userId),
             patch = req.body.patch;
         
-        return _insertPatches({ userId: userId }, [patch])
+        return _insertPatches({ userId: userId }, [ patch ])
             .then(function () {
                 return _mergePatches(userId);
             })
@@ -105,27 +71,16 @@ exports.web =
                 else
                     return db.getTask({ _id: patch.taskId });
             })
-            .done(function (task) {
+            .then(function (task) {
                 res.json({ task: task });
-            },
-            function (err) {
-                console.log(err);
-                res.send({ error: "Could not submit the change." });
             });
     },
 
     getTasks: function (req, res)
     {
-        if (!req.session.userId)
-            return res.send({ error: "SessionExpired"});
-
-        db.findTasks({ userId: new ObjectID(req.session.userId) }, { sort: [ "reminder.time" ], lazy: false })
-            .done(function(tasks) {
+        return db.findTasks({ userId: new ObjectID(req.session.userId) }, { sort: [ "reminder.time" ], lazy: false })
+            .then(function(tasks) {
                 res.send({ tasks: tasks });
-            },
-            function (err) {
-                console.log(err);
-                res.send({ error: "Could not load the tasks." });
             });
     }
 };

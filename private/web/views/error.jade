@@ -2,10 +2,10 @@ extends layout
 
 block head
     title Tasks Error
-    link(rel="stylesheet",href="/styles/layout.css")
+    link(rel="stylesheet",href="/styles/error.css")
 
 block content
-    #alert
-
-    p.lead Unfortunately there was an error. Try later.
-    a.btn.btn-default.btn-large(href="/") Back
+    h4 Unfortunately there was an error. Try later.
+    small= error || ""
+    div
+        a.btn.btn-default.btn-large(href="/") Back

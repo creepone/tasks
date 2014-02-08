@@ -3,12 +3,9 @@ var _ = require("underscore"),
     ObjectID = require("mongodb").ObjectID;
 
 exports.deviceStats = function (req, res) {
-    if (!req.session.userId)
-        return res.send({ error: "SessionExpired"});
-
     var userId = new ObjectID(req.session.userId);
 
-    db.findDevices({ userId: userId }, { lazy: false })
+    return db.findDevices({ userId: userId }, { lazy: false })
         .then(function (devices) {
             return db.getLastPatch({ userId: userId })
                 .then(function (patch) {
@@ -27,11 +24,7 @@ exports.deviceStats = function (req, res) {
                     return { devices: devicesToSend };
                 });
         })
-        .done(function (result) {
+        .then(function (result) {
             res.json(result);
-        },
-        function (err) {
-            console.log(err);
-            res.send({ error: "Could not get the device info." });
         });
 }

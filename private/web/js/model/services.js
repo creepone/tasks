@@ -1,31 +1,30 @@
 var $ = require("../lib/jquery"),
-    URI = require("../lib/URI/URI"),
     Q = require("../lib/q.min"),
     authentication = require("./authentication");
 
 function ajax(o) {
     return Q($.ajax(o))
         .then(function (data) {
-            if (data.error === "SessionExpired" && o.retryAuthenticate) {
+            return data;
+        },
+        function (res) {
+            if (res.status == 403 && o.retryAuthenticate)
                 return authentication.assertAuthenticated()
                     .then(function () {
                         o.retryAuthenticate = false;
                         return ajax(o);
                     });
-            }
-            else if (data.error)
-                throw new Error(data.error);
             else
-                return data;
+                throw new Error(res.responseText || "Unknown error");
         });
 }
 
 $.extend(exports, {
     authenticate: function (openid) {
-        var url = URI("/authenticate/init").addSearch({ openid: openid }).toString();
         return ajax({
             type: "GET",
-            url: url,
+            url: "/authenticate/init",
+            data: { openid: openid },
             dataType: "json"
         });
     },

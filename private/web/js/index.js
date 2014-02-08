@@ -1,21 +1,19 @@
 var $ = require("./lib/jquery"),
-    URI = require("./lib/URI/URI"),
     Q = require("./lib/q.min"),
     ko = require("./lib/knockout"),
-    moment = require("./lib/moment");
+    moment = require("./lib/moment"),
+    notifications = require("./model/notifications"),
+    services = require("./model/services"),
+    authentication = require("./model/authentication"),
+    tasks = require("./model/tasks"),
+    tools = require("./model/tools");
 
 require("./lib/bootstrap");
 require("./lib/bootstrap-switch");
 require("./lib/bootstrap-tagsinput");
 require("./lib/bootstrap-datetimepicker");
 
-var notifications = require("./model/notifications"),
-    services = require("./model/services"),
-    authentication = require("./model/authentication"),
-    tasks = require("./model/tasks");
-
-var _query = URI(window.location.href).search(true),
-    _data, _viewModel,
+var _data, _viewModel,
     _dateFormat = "DD.MM.YYYY HH:mm";
 
 $(function() {
@@ -24,15 +22,6 @@ $(function() {
        return;
 
     _data = JSON.parse($(".data").html());
-
-    if (!_data.logged) {
-        // do not automatically re-authenticate (e.g. after logout)
-        var autoReauthenticate = _query.autoAuth !== "0";
-        authentication.assertAuthenticated(autoReauthenticate).done(function () {
-            window.location.reload();
-        });
-        return;
-    }
 
     _createView();
     _createViewModel();
@@ -418,7 +407,7 @@ function _onSaveTaskClick()
             if (data.task)
                 _viewModel.tasks.insert(data.task);
 
-        }, _reportError);
+        }, tools.reportError);
 }
 
 function _onRemoveTaskClick()
@@ -437,7 +426,7 @@ function _onRemoveTaskClick()
             $task.fadeOut(function () {
                 _viewModel.tasks.removeById(taskId);
             });
-        }, _reportError);
+        }, tools.reportError);
 }
 
 function _onLogoutClick(event)
@@ -446,8 +435,10 @@ function _onLogoutClick(event)
 
     services.logout()
         .done(function() {
-            window.location.href = URI(window.location.href).addSearch({ autoAuth: 0 }).toString();
-        }, _reportError);
+            if (localStorage && localStorage.getItem("openid"))
+                localStorage.removeItem("openid");
+            window.location.href = "/";
+        }, tools.reportError);
 }
 
 function _onDevicesClick(event)
@@ -489,14 +480,4 @@ function _onNotificationsClick(event)
                     that.checked = notifications.isActive();
                 });
         });
-}
-
-function _reportError(error)
-{
-    $("#alert").html("<div class=\"alert alert-danger fade in\">" +
-        "<button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>" +
-        "Error occured when communicating with the server. </div>");
-
-    setTimeout(function () { $("#alert .alert").alert("close"); }, 2000);
-    console.log(error);
 }

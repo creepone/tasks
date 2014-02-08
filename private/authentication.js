@@ -1,5 +1,6 @@
 var openid = require("openid"),
     _ = require("underscore"),
+    Q = require("q"),
 	querystring = require("querystring"),
 	uuid = require("node-uuid"),
 	db = require("./db");
@@ -17,14 +18,14 @@ exports.device = {
 			+ querystring.stringify({ device: req.query.device, openid: req.query.openid });
 
 		var relyingParty = new openid.RelyingParty(verifyUrl, realm, false, false, []);
-		relyingParty.authenticate(req.query.openid, false, function(error, authUrl)
-		{
-			if (error || !authUrl)
-				return _reportDeviceError(res);
 
-			res.writeHead(302, { Location: authUrl });
-			res.end();
-		});
+        return Q.ninvoke(relyingParty, "authenticate", req.query.openid, false)
+            .then(function (authUrl) {
+                if (!authUrl)
+                    throw new Error("Failed to initiate authentication");
+
+                res.redirect(authUrl);
+            });
 	},
 	
 	/*
@@ -34,41 +35,38 @@ exports.device = {
 	*/
 	verify: function (req, res)
 	{
-		var relyingParty = new openid.RelyingParty("", null, false, false, []);
-		relyingParty.verifyAssertion(req, function(error, result)
-		{
-			if (error || !result.authenticated)
-				return _reportDeviceError(res);
+        var relyingParty = new openid.RelyingParty("", null, false, false, []);
 
-			var claimedIdentifier = result.claimedIdentifier;
+        return Q.ninvoke(relyingParty, "verifyAssertion", req)
+            .then(function (result) {
+                if (!result.authenticated)
+                    throw new Error("Failed to verify the authentication assertion.");
 
-            db.getUser({ openid: claimedIdentifier })
-                .then(function (result)
-                {
-                    if (result)
-                    {
-                        return _registerDevice({
-                            name: req.query.device,
-                            userId: result._id
-                        })
-                        .then(function (device) {
+                var claimedIdentifier = result.claimedIdentifier;
+
+                return db.getUser({ openid: claimedIdentifier })
+                    .then(function (user) {
+                        if (user) {
+                            return _registerDevice({
+                                name: req.query.device,
+                                userId: user._id
+                            })
+                            .then(function (device) {
                                 res.render("ios/redirect", {
                                     url: "http://done?" + querystring.stringify({ token: device.token })
                                 });
                             });
-                    }
-                    else
-                    {
-                        return res.render("ios/register", {
-                            openid: req.query.openid,
-                            claimedIdentifier: claimedIdentifier,
-                            device: req.query.device,
-                            codeRequired: !!process.env.APP_REGISTRATION_CODE
-                        });
-                    }
-                })
-                .fail(_reportDeviceError.bind(null, res));
-		});
+                        }
+                        else  {
+                            return res.render("ios/register", {
+                                openid: req.query.openid,
+                                claimedIdentifier: claimedIdentifier,
+                                device: req.query.device,
+                                codeRequired: !!process.env.APP_REGISTRATION_CODE
+                            });
+                        }
+                    });
+            });
 	},
 	
 	/*
@@ -77,26 +75,21 @@ exports.device = {
 	*/
 	register: function (req, res)
 	{
-		var o = {
+        var o = {
 			openid: req.body.claimedIdentifier,
 			name: req.body.name
 		};
 
         var registrationCode = process.env.APP_REGISTRATION_CODE || "";
         if (registrationCode && req.body.registrationCode !== registrationCode)
-            return _reportDeviceError(res);
+            throw new Error("Wrong registration code");
 
-        db.insertUser(o)
-            .then(function ()
-            {
+        return db.insertUser(o)
+            .then(function () {
                 // reauthenticate to acquire device id
                 var authenticateUrl = 'http://' + req.headers.host + '/ios/authenticate?' + querystring.stringify({ device: req.body.device, openid: req.body.openid });
-
-                res.writeHead(302, { Location : authenticateUrl });
-                res.end();
-
-            })
-            .fail(_reportDeviceError.bind(null, res));
+                res.redirect(authenticateUrl);
+            });
 	}
 }
 
@@ -114,11 +107,10 @@ exports.web = {
 	*/
 	logout: function(req, res)
 	{
-		req.session.destroy(function(error) {
-		  	if (error)
-                return res.json({ error: error });
-            res.json({});
-		});
+        return Q.ninvoke(req.session, "destroy")
+            .then(function () {
+                res.json({});
+            });
 	},
 	
 	/*
@@ -133,13 +125,14 @@ exports.web = {
 			+ querystring.stringify({ openid: req.query.openid });
 		
 		var relyingParty = new openid.RelyingParty(verifyUrl, realm, false, false, []);
-		relyingParty.authenticate(req.query.openid, false, function(error, authUrl)
-		{
-			if (error || !authUrl)
-				return res.json({ error: error || true });
 
-			res.json({ url: authUrl });
-		});
+        return Q.ninvoke(relyingParty, "authenticate", req.query.openid, false)
+            .then(function (authUrl) {
+                if (!authUrl)
+                    throw new Error("Failed to initiate authentication");
+
+                res.json({ url: authUrl });
+            });
 	},
 	
 	/*
@@ -149,43 +142,31 @@ exports.web = {
 	verify: function (req, res)
 	{
 		var relyingParty = new openid.RelyingParty("", null, false, false, []);
-		relyingParty.verifyAssertion(req, function(error, result)
-		{
-			if (error || !result.authenticated) {
-				console.log(error);
-				res.writeHead(302, { Location: "/error" });
-				return res.end();
-			}
 
-			var claimedIdentifier = result.claimedIdentifier;
+        return Q.ninvoke(relyingParty, "verifyAssertion", req)
+            .then(function (result) {
+                if (!result.authenticated)
+                    throw new Error("Failed to verify the authentication assertion.");
 
-            db.getUser({ openid: claimedIdentifier })
-                .then(function (result)
-                {
-                    if (result)
-                    {
-                        req.session.openid = claimedIdentifier;
-                        req.session.username = result.name;
-                        req.session.userId = result._id;
+                var claimedIdentifier = result.claimedIdentifier;
 
-                        res.writeHead(302, { Location: "/" });
-                        res.end();
-                    }
-                    else
-                    {
-                        res.render("register", {
-                            openid: req.query.openid,
-                            claimedIdentifier: claimedIdentifier,
-                            codeRequired: !!process.env.APP_REGISTRATION_CODE
-                        });
-                    }
-                })
-                .fail(function (err) {
-					console.log(err);
-                    res.writeHead(302, { Location: "/error" });
-                    res.end();
-                });
-		});
+                return db.getUser({ openid: claimedIdentifier })
+                    .then(function (user) {
+                        if (user) {
+                            req.session.openid = claimedIdentifier;
+                            req.session.username = user.name;
+                            req.session.userId = user._id;
+                            res.redirect("/");
+                        }
+                        else  {
+                            res.render("register", {
+                                openid: req.query.openid,
+                                claimedIdentifier: claimedIdentifier,
+                                codeRequired: !!process.env.APP_REGISTRATION_CODE
+                            });
+                        }
+                    });
+            });
 	},
 	
 	/*
@@ -200,20 +181,13 @@ exports.web = {
 		};
 
         var registrationCode = process.env.APP_REGISTRATION_CODE || "";
-        if (registrationCode && req.body.registrationCode !== registrationCode) {
-            res.writeHead(302, { Location: "/error" });
-            return res.end();
-        }
+        if (registrationCode && req.body.registrationCode !== registrationCode)
+            throw new Error("Wrong registration code");
 
-        db.insertUser(o)
+        return db.insertUser(o)
             .then(function() {
                 var authenticateUrl = '/authenticate?' + querystring.stringify({ openid: req.body.openid });
-                res.writeHead(302, { Location: authenticateUrl });
-                res.end();
-            })
-            .fail(function (){
-                res.writeHead(302, { Location: "/error" });
-                res.end();
+                res.redirect(authenticateUrl);
             });
 	},
 
@@ -237,9 +211,4 @@ function _registerDevice(o)
     .then(function () {
         return o;
     });
-}
-
-function _reportDeviceError(res)
-{
-	res.render('ios/error', { url: 'http://error' });
 }
