@@ -90,10 +90,6 @@ function _insertPatches(device, patches)
 {
     var devices;
     var userId = device.userId;
-    
-    var inserts = patches.map(function (patch) {
-        return insertPatch(patch);
-    });
 
     function insertPatch(patch)
     {
@@ -146,7 +142,9 @@ function _insertPatches(device, patches)
             devices = foundDevices;
         })
         .then(function () {
-            return Q.all(inserts);
+            return Q.all(patches.map(function (patch) {
+                return insertPatch(patch);
+            }));
         })
         .then(function () {
             var devicesToNotify = devices.filter(function (otherDevice) {
