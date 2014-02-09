@@ -2,6 +2,16 @@
     "browserify": {
         "transform": [ "browserify-shim" ]
     },
+    "browser": {
+        "jquery": "./lib/jquery.js",
+        "q": "./lib/q.min.js",
+        "moment": "./lib/moment.js",
+        "knockout": "./lib/knockout.js",
+        "bootstrap": "./lib/bootstrap.js",
+        "bootstrap-switch": "./lib/bootstrap-switch.js",
+        "bootstrap-tagsinput": "./lib/bootstrap-tagsinput.js",
+        "bootstrap-datetimepicker": "./lib/bootstrap-datetimepicker.js"
+    },
     "browserify-shim": {
         "./lib/moment.js": "moment",
         "./lib/knockout.js": "ko",

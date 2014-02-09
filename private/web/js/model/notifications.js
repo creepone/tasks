@@ -1,6 +1,6 @@
-var $ = require("../lib/jquery"),
-    Q = require("../lib/q.min"),
-    ko = require("../lib/knockout");
+var $ = require("jquery"),
+    Q = require("q"),
+    ko = require("knockout");
 
 var dueTasksCount = ko.observable(0),
     _obsoleteReminders = [];

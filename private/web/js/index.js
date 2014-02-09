@@ -1,17 +1,17 @@
-var $ = require("./lib/jquery"),
-    Q = require("./lib/q.min"),
-    ko = require("./lib/knockout"),
-    moment = require("./lib/moment"),
+var $ = require("jquery"),
+    Q = require("q"),
+    ko = require("knockout"),
+    moment = require("moment"),
     notifications = require("./model/notifications"),
-    services = require("./model/services"),
+    ajax = require("./model/ajax"),
     authentication = require("./model/authentication"),
     tasks = require("./model/tasks"),
     tools = require("./model/tools");
 
-require("./lib/bootstrap");
-require("./lib/bootstrap-switch");
-require("./lib/bootstrap-tagsinput");
-require("./lib/bootstrap-datetimepicker");
+require("bootstrap");
+require("bootstrap-switch");
+require("bootstrap-tagsinput");
+require("bootstrap-datetimepicker");
 
 var _data, _viewModel,
     _dateFormat = "DD.MM.YYYY HH:mm";
@@ -33,7 +33,6 @@ function _createView()
 {
     // reveal all the user-dependent UI
     $("#loader").hide();
-    $(".needs-user").removeClass("needs-user");
 
     $('input[type="checkbox"]').bootstrapSwitch();
 
@@ -397,7 +396,7 @@ function _onSaveTaskClick()
         return;
     }
 
-    services.submitPatch(patch)
+    ajax.submitPatch(patch)
         .done(function(data) {
             $(".modal").modal("hide");
 
@@ -420,7 +419,7 @@ function _onRemoveTaskClick()
         taskId: taskId
     };
 
-    services.submitPatch(patch)
+    ajax.submitPatch(patch)
         .done(function () {
             $task.find(".removeTask").popover("hide");
             $task.fadeOut(function () {
@@ -433,7 +432,7 @@ function _onLogoutClick(event)
 {
     event.preventDefault();
 
-    services.logout()
+    ajax.logout()
         .done(function() {
             if (localStorage && localStorage.getItem("openid"))
                 localStorage.removeItem("openid");
@@ -446,7 +445,7 @@ function _onDevicesClick(event)
     var that = this;
     event.preventDefault();
 
-    services.getDeviceStats()
+    ajax.getDeviceStats()
         .then(function (stats) {
             stats.devices = stats.devices.map(_convertDeviceFromServer);
 

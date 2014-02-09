@@ -1,4 +1,4 @@
-var $ = require("./lib/jquery");
+var $ = require("jquery");
 
 $(function() {
     $("input[name='name']").keyup(checkInput).change(checkInput);

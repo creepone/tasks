@@ -1,5 +1,5 @@
-var $ = require("../lib/jquery"),
-    Q = require("../lib/q.min");
+var $ = require("jquery"),
+    Q = require("q");
 
 exports.parseUri = function(str) {
 

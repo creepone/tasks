@@ -1,6 +1,6 @@
-var $ = require("../lib/jquery"),
-    Q = require("../lib/q.min"),
-    services = require("./services");
+var $ = require("jquery"),
+    Q = require("q"),
+    ajax = require("./ajax");
 
 exports.providers = {
     google: { openid: "https://www.google.com/accounts/o8/id", image: "/img/openid-google.png" },
@@ -15,7 +15,7 @@ $.extend(exports, {
      Ensures that the current session is authenticated. If necessary, attempts to re-authenticate or redirects to the authenticate page.
     */
     assertAuthenticated: function(autoReauthenticate) {
-        return services.getAuthInfo()
+        return ajax.getAuthInfo()
             .then(function (authInfo) {
                 if (authInfo.logged)
                     return authInfo;
@@ -50,7 +50,7 @@ function autoAuthenticate()
     if (!openid)
         return Q(false);
 
-    return services.authenticate(openid)
+    return ajax.authenticate(openid)
         .then(function (result)
         {
             if (result.logged)
@@ -58,7 +58,7 @@ function autoAuthenticate()
 
             return authenticateInIframe(result.url)
                 .then(function () {
-                    return services.getAuthInfo()
+                    return ajax.getAuthInfo()
                         .then(function (authInfo) {
                             return authInfo.logged ? authInfo : false;
                         });

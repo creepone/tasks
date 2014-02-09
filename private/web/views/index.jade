@@ -7,23 +7,22 @@ block head
   script.data(type="text/json")!= JSON.stringify(data)
 
 block header-content
-    a.navbar-text.needs-user.has-popover#devices(href="#"): i.glyphicon.glyphicon-phone
-    a.navbar-text.needs-user.has-popover#notifications(href="#"): i.glyphicon.glyphicon-bell
+    a.navbar-text.has-popover#devices(href="#"): i.glyphicon.glyphicon-phone
+    a.navbar-text.has-popover#notifications(href="#"): i.glyphicon.glyphicon-bell
     .navbar-right
       p.navbar-text(data-bind="text: username")
-      a.navbar-text.needs-user#logout(href="#"): i.glyphicon.glyphicon-eject
+      a.navbar-text#logout(href="#"): i.glyphicon.glyphicon-eject
 
 block content
   #loader
     .well.well-transparent.lead.text-center
       img(src="../img/spinner.gif")
 
-  .needs-user
-    button.btn.btn-sm.btn-primary#addTask(type="button") Add Task
-    hr
+  button.btn.btn-sm.btn-primary#addTask(type="button") Add Task
+  hr
 
-  .needs-user(data-bind="foreach: tasks")
-    div.task(data-bind="attr: { 'data-id': _id }")
+  div(data-bind="foreach: tasks")
+    .task(data-bind="attr: { 'data-id': _id }")
       .actions
         button.removeTask.close: i.glyphicon.glyphicon-remove
         button.editTask.close: i.glyphicon.glyphicon-pencil

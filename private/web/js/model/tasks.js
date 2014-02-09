@@ -1,7 +1,7 @@
-var $ = require("../lib/jquery"),
-    ko = require("../lib/knockout"),
-    moment = require("../lib/moment"),
-    services = require("./services"),
+var $ = require("jquery"),
+    ko = require("knockout"),
+    moment = require("moment"),
+    ajax = require("./ajax"),
     notifications = require("./notifications");
 
 var _tasks,
@@ -58,7 +58,7 @@ function scheduleRefresh()
 
     function updateTasks()
     {
-        services.getTasks()
+        ajax.getTasks()
             .done(function (o) {
                 _tasks.removeAll();
                 o.tasks.forEach(function (task) {

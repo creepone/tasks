@@ -1,11 +1,11 @@
-var $ = require("./lib/jquery"),
-    ko = require("./lib/knockout"),
-    Q = require("./lib/q.min"),
-    services = require("./model/services"),
+var $ = require("jquery"),
+    ko = require("knockout"),
+    Q = require("q"),
+    ajax = require("./model/ajax"),
     authentication = require("./model/authentication"),
     tools = require("./model/tools");
 
-require("./lib/bootstrap");
+require("bootstrap");
 
 var _viewModel;
 
@@ -24,7 +24,7 @@ $(function()
         _start(openid);
     }
     else {
-        services.getAuthInfo()
+        ajax.getAuthInfo()
             .done(function (res) {
                 if (res.logged)
                     window.location.href = '/';
@@ -86,7 +86,7 @@ function _start(openid)
     if (localStorage)
         localStorage.setItem("openid", openid);
 
-    services.authenticate(openid)
+    ajax.authenticate(openid)
         .done(function (res) {
             if (res.logged)
                 window.location.href = '/';
