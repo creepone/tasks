@@ -18,15 +18,13 @@ require("bootstrap-switch");
 require("bootstrap-tagsinput");
 require("bootstrap-datetimepicker");
 
-var _data, _viewModel,
-    _dateFormat = "DD.MM.YYYY HH:mm";
+/*var _data, _viewModel,
+    _dateFormat = "DD.MM.YYYY HH:mm";*/
 
 $(function() {
     // we could be running in an iframe after a silent reauthentication. just do nothing in that case
     if (window !== window.top)
        return;
-
-    // START REFACTORING
 
     var data = JSON.parse($(".data").html());
 
@@ -38,13 +36,11 @@ $(function() {
     page.render();
     window.page = page;
 
-    // END REFACTORING
-
-    _data = JSON.parse($(".data").html());
+    // _data = JSON.parse($(".data").html());
 
     _createView();
-    _createViewModel();
-    ko.applyBindings(_viewModel);
+    // _createViewModel();
+    // ko.applyBindings(_viewModel);
 });
 
 var Page = Backbone.View.extend({
@@ -58,11 +54,15 @@ var Page = Backbone.View.extend({
         this.listenTo(model.tasks, "sort", this.onTasksSort);
 
         this.$el.find("#loader").hide();
-        // setInterval(function () { model.tasks.fetch().catch(tools.reportError); }, 5000);
+        this.$el.find("#addTask").focus();
+        setInterval(function () { model.tasks.fetch().catch(tools.reportError); }, 300000);
     },
     events: {
+        "click": "onDocumentClick",
+        "click #logout": "onLogoutClick",
         "click #addTask": "onAddTaskClick",
-        "click .actions .editTask": "onEditTaskClick"
+        "click .actions .editTask": "onEditTaskClick",
+        "click .popoverDelete .buttons button[type='submit']": "onRemoveTaskClick"
     },
 
     onTaskAdd: function (task, tasks) {
@@ -78,7 +78,7 @@ var Page = Backbone.View.extend({
     },
     onTaskRemove: function (task, tasks) {
         var taskView = _.find(this.taskViews, function (v) { return v.model === task; });
-        taskView.$el.remove();
+        taskView.$el.fadeOut(function () { taskView.$el.remove(); });
         this.taskViews = _.without(this.taskViews, taskView);
     },
     onTasksSort: function (tasks) {
@@ -99,26 +99,66 @@ var Page = Backbone.View.extend({
             self.onTaskAdd(task, tasks);
         });
     },
-    onAddTaskClick: function () {
-        var editedTask = new Task();
-        authentication.assertAuthenticated().done(function () {
-            var taskModal = new TaskModalView({ model: editedTask });
-            taskModal.show();
+    onDocumentClick: function (event) {
+        this.$el.find(".has-popover").each(function () {
+            if (!$(this).is(event.target) && $(this).has(event.target).length === 0 && $(".popover").has(event.target).length === 0) {
+                $(this).popover("destroy");
+            }
         });
-        this.editedTask = editedTask;
+    },
+    onLogoutClick: function (event) {
+        event.preventDefault();
+
+        this.model.logout()
+            .then(function () {
+                window.location.href = "/";
+            }, tools.reportError);
+    },
+    onAddTaskClick: function () {
+        var self = this,
+            editedTask = new Task();
+
+        authentication.assertAuthenticated().done(function () {
+            self.taskModal = new TaskModalView({ model: editedTask });
+            self.taskModal.show();
+            self.taskModal.on("save", self.onTaskSave, self);
+        });
     },
     onEditTaskClick: function (event) {
         var $task = $(event.currentTarget).closest(".task");
         var taskId = $task.attr("data-id");
 
-        var task = this.model.tasks.getById(taskId);
-        var editedTask = task.clone();
+        var self = this,
+            task = this.model.tasks.getById(taskId),
+            editedTask = task.clone();
 
         authentication.assertAuthenticated().done(function () {
-            var taskModal = new TaskModalView({ model: editedTask });
-            taskModal.show();
+            self.taskModal = new TaskModalView({ model: editedTask });
+            self.taskModal.show();
+            self.taskModal.on("save", self.onTaskSave, self);
         });
-        this.editedTask = editedTask;
+    },
+    onRemoveTaskClick: function (event) {
+        var $task = $(event.currentTarget).closest(".task");
+        var taskId = $task.attr("data-id");
+
+        var self = this,
+            task = this.model.tasks.getById(taskId);
+
+        authentication.assertAuthenticated().done(function () {
+            task.remove().done(function () {
+                $task.find(".removeTask").popover("hide");
+                self.model.tasks.remove(task);
+            }, tools.reportError);
+        });
+    },
+    onTaskSave: function() {
+        var self = this;
+        this.taskModal.model.save(this.model.tasks)
+            .done(function () {
+                self.taskModal.hide();
+                self.taskModal = null;
+            }, tools.reportError);
     }
 });
 
@@ -126,12 +166,12 @@ var Page = Backbone.View.extend({
 function _createView()
 {
     // reveal all the user-dependent UI
-    $("#loader").hide();
+    // $("#loader").hide();
 
-    $('input[type="checkbox"]').bootstrapSwitch();
+    // $('input[type="checkbox"]').bootstrapSwitch();
 
     // hack to convince moment english week starts on Monday
-    moment()._lang._week.dow = 1;
+    /*moment()._lang._week.dow = 1;
     $(".input-group.date").datetimepicker({
         format: _dateFormat
     });
@@ -165,6 +205,7 @@ function _createView()
         }
     });
 
+
     $(document).on("click", function (e) {
         $(".has-popover").each(function () {
             if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $(".popover").has(e.target).length === 0) {
@@ -172,6 +213,8 @@ function _createView()
             }
         });
     });
+
+    */
 
     $(document).on("click", ".task .removeTask", function () {
         $(this).popover({
@@ -191,19 +234,20 @@ function _createView()
            $(this).find(".removeTask").popover("destroy");
     });
 
-    $(document).on("click", '.popoverDelete .buttons button[type="submit"]', _onRemoveTaskClick);
+    // $(document).on("click", '.popoverDelete .buttons button[type="submit"]', _onRemoveTaskClick);
+
     // $(document).on("click", ".actions .editTask", _onEditTaskClick);
 
-    $("#logout").click(_onLogoutClick);
+    // $("#logout").click(_onLogoutClick);
     $("#devices").click(_onDevicesClick);
     $("#notifications").click(_onNotificationsClick);
     // $("#addTask").on("click", _onAddTaskClick);
-    $("#saveTask").on("click", _onSaveTaskClick);
+    // $("#saveTask").on("click", _onSaveTaskClick);
 
-    $("#addTask").focus();
+    // $("#addTask").focus();
 }
 
-function _createViewModel()
+/*function _createViewModel()
 {
     var editedTask = {
         _id: ko.observable(),
@@ -222,13 +266,13 @@ function _createViewModel()
     };
     
     _setupManualBindings();
-}
+}*/
 
 function _setupManualBindings()
 {
     // because of using custom controls, we can't bind automatically in some cases
 
-    var setting;
+    /*var setting;
 
     _viewModel.editedTask.reminderImportant.subscribe(function (value) {
         if (!setting)
@@ -283,6 +327,7 @@ function _setupManualBindings()
         _viewModel.editedTask.categories(categories);
         setting = false;
     });
+    */
 
     updateNotificationsCount(notifications.dueTasksCount());
     notifications.dueTasksCount.subscribe(updateNotificationsCount);
@@ -295,7 +340,7 @@ function _setupManualBindings()
     }
 }
 
-function _createPatch(editedTask, task)
+/*function _createPatch(editedTask, task)
 {
     var patch = {};
 
@@ -371,6 +416,7 @@ function _arrayDiff(oldArray, newArray)
         res.remove = toRemove;
     return res;
 }
+*/
 
 function _convertDeviceFromServer(device)
 {
@@ -391,6 +437,7 @@ function _renderTemplate(name, data)
     return html;
 }
 
+/*
 function _transformDate(input)
 { 
 	var patterns = {
@@ -434,6 +481,7 @@ function _transformDate(input)
 
     _viewModel.editedTask.reminderTime(shiftedVal);
 }
+
 
 
 function _onAddTaskClick()
@@ -522,6 +570,7 @@ function _onRemoveTaskClick()
         }, tools.reportError);
 }
 
+
 function _onLogoutClick(event)
 {
     event.preventDefault();
@@ -533,6 +582,8 @@ function _onLogoutClick(event)
             window.location.href = "/";
         }, tools.reportError);
 }
+
+*/
 
 function _onDevicesClick(event)
 {

@@ -10,7 +10,7 @@ block header-content
     a.navbar-text.has-popover#devices(href="#"): i.glyphicon.glyphicon-phone
     a.navbar-text.has-popover#notifications(href="#"): i.glyphicon.glyphicon-bell
     .navbar-right
-      p.navbar-text(data-bind="text: username")
+      p.navbar-text= username
       a.navbar-text#logout(href="#"): i.glyphicon.glyphicon-eject
 
 block content
@@ -36,28 +36,6 @@ block content
       pre(data-bind="if: $data.notes")
         small(data-bind="text: notes")
       hr
-
-  #oldModal.modal.fade(tabindex="-1", role="dialog", data-bind="with: editedTask")
-    .modal-dialog
-      .modal-content
-        .modal-header
-          button.close(type="button", data-dismiss="modal") &times
-          h4(data-bind="text: modalHeader($data)")
-        .modal-body
-          input.form-control(type="text", name="taskName", placeholder="Task name", data-bind="value: name")
-          .control-label
-            label(for="taskImportant") Important
-          input(type="checkbox", name="taskImportant")
-          .input-group.date
-            input.form-control(type="text", placeholder="Reminder time")
-            span.input-group-addon
-              span.glyphicon.glyphicon-time
-          input.form-control.categories(type="text", placeholder="Categories")
-          textarea.form-control#taskNotes(rows="10", placeholder="Description and notes", data-bind="value: notes")
-        .modal-footer
-          button.btn.btn-primary#saveTask(type="button", data-bind="enable: name") Save
-          button.btn.btn-default(type="button", data-dismiss="modal") Close
-
 
   script#devicesTemplate(type="text/html").
     <div class="popoverDevices" data-bind="foreach: devices">

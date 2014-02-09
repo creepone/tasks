@@ -8,6 +8,7 @@ var _dateFormat = "DD.MM.YYYY HH:mm";
 var TaskModalView = Backbone.View.extend({
     initialize: function() {},
     events: {
+        "click #saveTask": "onSaveTaskClick",
         "shown.bs.modal": "onModalShown",
         "hidden.bs.modal": "onModalHidden",
         "input [data-bind]": "onPropertyChange",
@@ -56,6 +57,9 @@ var TaskModalView = Backbone.View.extend({
         this.$el.find(".input-group.date").data("DateTimePicker").setDate(date);
     },
 
+    onSaveTaskClick: function (event) {
+        this.trigger("save");
+    },
     onModalShown: function (event) {
         this.$el.find("input:first").focus();
     },
@@ -67,6 +71,9 @@ var TaskModalView = Backbone.View.extend({
         var property = $el.attr("data-bind");
         var value = $el.val();
         this.model.set(property, value);
+
+        if (property == "name")
+            this.$el.find("#saveTask").prop({ disabled: !value });
     },
     onReminderImportantChange: function (event, data) {
         var reminder = this.model.reminder || {};

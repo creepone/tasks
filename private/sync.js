@@ -72,7 +72,7 @@ exports.web =
                     return db.getTask({ _id: patch.taskId });
             })
             .then(function (task) {
-                res.json({ task: task });
+                res.json({ task: _taskToClient(task) });
             });
     },
 
@@ -80,15 +80,7 @@ exports.web =
     {
         return db.findTasks({ userId: new ObjectID(req.session.userId) }, { sort: [ "reminder.time" ], lazy: false })
             .then(function(tasks) {
-                var clientTasks = tasks.map(function (task) {
-                    var clientTask = _.extend({}, task);
-                    delete clientTask.userId;
-                    delete clientTask.lastClientPatchId;
-                    clientTask.reminder = clientTask.reminder || null;
-                    return clientTask;
-                });
-
-                res.send(clientTasks);
+                res.send(tasks.map(_taskToClient));
             });
     }
 };
@@ -458,4 +450,13 @@ function _notifyDevices(devices)
         note.setSound("");
         apnConn.pushNotification(note, apnDevice);
     });
+}
+
+function _taskToClient(task)
+{
+    var clientTask = _.extend({}, task);
+    delete clientTask.userId;
+    delete clientTask.lastClientPatchId;
+    clientTask.reminder = clientTask.reminder || null;
+    return clientTask;
 }

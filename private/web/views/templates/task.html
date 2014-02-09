@@ -20,7 +20,7 @@
     </div>
     <% } %>
     <div>
-        <% task.categories.forEach(function (category) { %>
+        <% (task.categories || []).forEach(function (category) { %>
         <span class="label label-default"><%- category %></span>
         <% }); %>
     </div>

@@ -19,6 +19,13 @@ var IndexPageModel = Backbone.Model.extend({
     properties: "tasks",
     initialize: function() {
         this.tasks = new Tasks(this.tasks || []);
+    },
+    logout: function () {
+        return ajax.logout()
+            .then(function() {
+                if (localStorage && localStorage.getItem("openid"))
+                    localStorage.removeItem("openid");
+            });
     }
 });
 

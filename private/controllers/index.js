@@ -6,8 +6,8 @@ exports.render = function (req, res) {
     return db.findTasks({ userId: new ObjectID(req.session.userId) }, { sort: [ "reminder.time" ], lazy: false })
         .then(function(tasks) {
             res.render("index", {
+                username: req.session.username,
                 data: {
-                    username: req.session.username,
                     tasks: tasks
                 }
             });

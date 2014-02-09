@@ -21,7 +21,7 @@
                 <textarea rows="10" placeholder="Description and notes" id="taskNotes" class="form-control" data-bind="notes"><%- task.notes %></textarea>
             </div>
             <div class="modal-footer">
-                <button type="button" id="saveTask" class="btn btn-primary">Save</button>
+                <button type="button" id="saveTask" class="btn btn-primary" <%= task._id ? "" : "disabled" %>>Save</button>
                 <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
             </div>
         </div>
