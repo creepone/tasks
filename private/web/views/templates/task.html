@@ -1,0 +1,33 @@
+<div class="task" data-id="<%= task._id %>">
+    <div class="actions">
+        <button class="removeTask close">
+            <i class="glyphicon glyphicon-remove" />
+        </button>
+        <button class="editTask close">
+           <i class="glyphicon glyphicon-pencil" />
+        </button>
+    </div>
+    <h4 class="name <%= task.isDue ? 'text-danger' : 'text-info' %>">
+        <%- task.name %>
+    </h4>
+    <% if (task.reminder) { %>
+    <div>
+        <p>
+            <small class="time" <%= task.reminder.important ? "data-important" : "" %>>
+                <%- task.timeText() %>
+            </small>
+        </p>
+    </div>
+    <% } %>
+    <div>
+        <% task.categories.forEach(function (category) { %>
+        <span class="label label-default"><%- category %></span>
+        <% }); %>
+    </div>
+    <% if (task.notes) { %>
+    <div class="well well-sm">
+        <small><%- task.notes %></small>
+    </div>
+    <% } %>
+    <hr />
+</div>

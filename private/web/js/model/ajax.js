@@ -20,6 +20,7 @@ function ajax(o) {
 }
 
 $.extend(exports, {
+    ajax: ajax,
     authenticate: function (openid) {
         return ajax({
             type: "GET",

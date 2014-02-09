@@ -3,7 +3,9 @@
         "transform": [ "browserify-shim" ]
     },
     "browser": {
-        "jquery": "./lib/jquery.js",
+        "jquery": "./lib/extensions/jquery.js",
+        "backbone": "./lib/extensions/backbone.js",
+        "underscore": "./lib/underscore.js",
         "q": "./lib/q.min.js",
         "moment": "./lib/moment.js",
         "knockout": "./lib/knockout.js",
@@ -17,6 +19,7 @@
         "./lib/knockout.js": "ko",
         "./lib/q.min.js": "Q",
         "./lib/jquery.js": "$",
-        "./lib/bootstrap.js": { "depends": "./lib/jquery.js:jQuery" }
+        "./lib/bootstrap.js": { "depends": "./lib/jquery.js:jQuery" },
+        "./lib/backbone.js": { "exports": "Backbone", "depends": ["./lib/jquery.js:jQuery", "./lib/underscore.js:_"] }
     }
 }

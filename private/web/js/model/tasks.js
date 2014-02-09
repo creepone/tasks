@@ -61,7 +61,7 @@ function scheduleRefresh()
         ajax.getTasks()
             .done(function (o) {
                 _tasks.removeAll();
-                o.tasks.forEach(function (task) {
+                o.forEach(function (task) {
                     _tasks.push(convertFromServer(task));
                 });
             })

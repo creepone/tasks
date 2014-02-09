@@ -8,6 +8,10 @@ hr {
     margin-bottom: 10px;
 }
 
+#oldTasks {
+  display: none;
+}
+
 #logout {
     color: #fff;
     margin-left: 0;
@@ -48,7 +52,7 @@ pre:empty {
     display: none;
 }
 
-.modal input[name="taskName"],.tags,.has-switch,.input-group.date {
+.modal input[data-bind="name"],.tags,.has-switch,.input-group.date {
     margin-bottom: 8px;
 }
 
@@ -93,24 +97,33 @@ pre:empty {
 }
 
 .task {
-    position: relative;
-}
+  position: relative;
 
-.task .actions {
+  .actions {
     position: absolute;
     right: 10px;
     top: 0px;
     display: none;
-}
+  }
 
-.task .actions > button {
+  .actions > button {
     font-size: 16px;
     padding-top: 5px;
     padding-right: 2px;
+  }
+
+  .well {
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+    small {
+      white-space: pre;
+    }
+  }
 }
 
 .task:hover .actions {
-    display: block;
+  display: block;
 }
 
 .popoverDelete {

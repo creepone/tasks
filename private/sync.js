@@ -80,7 +80,15 @@ exports.web =
     {
         return db.findTasks({ userId: new ObjectID(req.session.userId) }, { sort: [ "reminder.time" ], lazy: false })
             .then(function(tasks) {
-                res.send({ tasks: tasks });
+                var clientTasks = tasks.map(function (task) {
+                    var clientTask = _.extend({}, task);
+                    delete clientTask.userId;
+                    delete clientTask.lastClientPatchId;
+                    clientTask.reminder = clientTask.reminder || null;
+                    return clientTask;
+                });
+
+                res.send(clientTasks);
             });
     }
 };

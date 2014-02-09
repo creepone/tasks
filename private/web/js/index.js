@@ -6,7 +6,12 @@ var $ = require("jquery"),
     ajax = require("./model/ajax"),
     authentication = require("./model/authentication"),
     tasks = require("./model/tasks"),
-    tools = require("./model/tools");
+    tools = require("./model/tools"),
+    Backbone = require("backbone"),
+    IndexPageModel = require("./models/pages/index").IndexPageModel,
+    Task = require("./models/task").Task,
+    TaskView = require("./views/task").TaskView,
+    TaskModalView = require('./views/taskModal').TaskModalView;
 
 require("bootstrap");
 require("bootstrap-switch");
@@ -21,11 +26,100 @@ $(function() {
     if (window !== window.top)
        return;
 
+    // START REFACTORING
+
+    var data = JSON.parse($(".data").html());
+
+    var page = new Page({
+        model: new IndexPageModel(data),
+        el: document.body
+    });
+
+    page.render();
+    window.page = page;
+
+    // END REFACTORING
+
     _data = JSON.parse($(".data").html());
 
     _createView();
     _createViewModel();
     ko.applyBindings(_viewModel);
+});
+
+var Page = Backbone.View.extend({
+    initialize: function () {
+        var model = this.model;
+        this.listenTo(model, "change", this.render);
+
+        this.taskViews = [];
+        this.listenTo(model.tasks, "add", this.onTaskAdd);
+        this.listenTo(model.tasks, "remove", this.onTaskRemove);
+        this.listenTo(model.tasks, "sort", this.onTasksSort);
+
+        this.$el.find("#loader").hide();
+        // setInterval(function () { model.tasks.fetch().catch(tools.reportError); }, 5000);
+    },
+    events: {
+        "click #addTask": "onAddTaskClick",
+        "click .actions .editTask": "onEditTaskClick"
+    },
+
+    onTaskAdd: function (task, tasks) {
+        var index = tasks.indexOf(task);
+
+        var taskView = new TaskView({
+            model: task
+        });
+
+        this.$el.find("#tasks").insertAt(index, taskView.el);
+        this.taskViews.splice(index, 0, taskView);
+        taskView.render();
+    },
+    onTaskRemove: function (task, tasks) {
+        var taskView = _.find(this.taskViews, function (v) { return v.model === task; });
+        taskView.$el.remove();
+        this.taskViews = _.without(this.taskViews, taskView);
+    },
+    onTasksSort: function (tasks) {
+        var self = this,
+            $tasks = this.$el.find("#tasks");
+
+        this.taskViews = _.sortBy(this.taskViews, function (v) { return self.model.tasks.indexOf(v.model); });
+        var elements = _.pluck(this.taskViews, "el");
+        $(_.sortBy($tasks.children(), function (el) { return elements.indexOf(el); })).appendTo($tasks);
+    },
+
+    render: function () {
+        var self = this;
+        this.$el.find("#tasks").empty();
+
+        var tasks = this.model.tasks;
+        tasks.each(function (task) {
+            self.onTaskAdd(task, tasks);
+        });
+    },
+    onAddTaskClick: function () {
+        var editedTask = new Task();
+        authentication.assertAuthenticated().done(function () {
+            var taskModal = new TaskModalView({ model: editedTask });
+            taskModal.show();
+        });
+        this.editedTask = editedTask;
+    },
+    onEditTaskClick: function (event) {
+        var $task = $(event.currentTarget).closest(".task");
+        var taskId = $task.attr("data-id");
+
+        var task = this.model.tasks.getById(taskId);
+        var editedTask = task.clone();
+
+        authentication.assertAuthenticated().done(function () {
+            var taskModal = new TaskModalView({ model: editedTask });
+            taskModal.show();
+        });
+        this.editedTask = editedTask;
+    }
 });
 
 
@@ -98,12 +192,12 @@ function _createView()
     });
 
     $(document).on("click", '.popoverDelete .buttons button[type="submit"]', _onRemoveTaskClick);
-    $(document).on("click", ".actions .editTask", _onEditTaskClick);
+    // $(document).on("click", ".actions .editTask", _onEditTaskClick);
 
     $("#logout").click(_onLogoutClick);
     $("#devices").click(_onDevicesClick);
     $("#notifications").click(_onNotificationsClick);
-    $("#addTask").on("click", _onAddTaskClick);
+    // $("#addTask").on("click", _onAddTaskClick);
     $("#saveTask").on("click", _onSaveTaskClick);
 
     $("#addTask").focus();
@@ -354,7 +448,7 @@ function _onAddTaskClick()
     task.reminderTime(null);
 
     authentication.assertAuthenticated().done(function () {
-        $(".modal").modal("show");
+        $("#oldModal").modal("show");
     });
 }
 
@@ -378,7 +472,7 @@ function _onEditTaskClick()
         taskVm.reminderTime(null);
 
     authentication.assertAuthenticated().done(function () {
-        $(".modal").modal("show");
+        $("#oldModal").modal("show");
     });
 }
 
