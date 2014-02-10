@@ -8,6 +8,21 @@ hr {
     margin-bottom: 10px;
 }
 
+.task.fade-in {
+    animation: fadein 1s;
+    -webkit-animation: fadein 1s;
+}
+
+@-webkit-keyframes fadein {
+    from { opacity:0; }
+    to { opacity:1; }
+}
+
+@keyframes fadein {
+    from { opacity:0; }
+    to { opacity:1; }
+}
+
 #oldTasks {
   display: none;
 }
