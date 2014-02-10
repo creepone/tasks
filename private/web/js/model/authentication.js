@@ -75,6 +75,3 @@ function autoAuthenticate()
         return deferred.promise.timeout(2000);
     }
 }
-
-
-

@@ -2,10 +2,8 @@ var $ = require("jquery"),
     Q = require("q"),
     ko = require("knockout"),
     moment = require("moment"),
-    notifications = require("./model/notifications"),
     ajax = require("./model/ajax"),
     authentication = require("./model/authentication"),
-    tasks = require("./model/tasks"),
     tools = require("./model/tools"),
     Backbone = require("backbone"),
     IndexPageModel = require("./models/pages/index").IndexPageModel,
@@ -46,7 +44,7 @@ $(function() {
 var Page = Backbone.View.extend({
     initialize: function () {
         var model = this.model;
-        this.listenTo(model, "change", this.render);
+        this.listenTo(model, "change", this.onModelChange);
 
         this.taskViews = [];
         this.listenTo(model.tasks, "add", this.onTaskAdd);
@@ -56,13 +54,20 @@ var Page = Backbone.View.extend({
         this.$el.find("#loader").hide();
         this.$el.find("#addTask").focus();
         setInterval(function () { model.tasks.fetch().catch(tools.reportError); }, 300000);
+
+        this.onDueTasksCountChange();
+        this.listenTo(model, "change:dueTasksCount", this.onDueTasksCountChange);
     },
     events: {
         "click": "onDocumentClick",
         "click #logout": "onLogoutClick",
+        "click #notifications": "onNotificationsClick",
         "click #addTask": "onAddTaskClick",
         "click .actions .editTask": "onEditTaskClick",
-        "click .popoverDelete .buttons button[type='submit']": "onRemoveTaskClick"
+        "click .task .removeTask": "onRemoveTaskConfirmClick",
+        "click .popoverDelete .buttons button[type='submit']": "onRemoveTaskClick",
+        "click .popoverDelete .buttons button[type='button']": "onDismissRemoveTaskClick",
+        "mouseleave .task": "onTaskMouseleave"
     },
 
     onTaskAdd: function (task, tasks) {
@@ -90,14 +95,23 @@ var Page = Backbone.View.extend({
         $(_.sortBy($tasks.children(), function (el) { return elements.indexOf(el); })).appendTo($tasks);
     },
 
-    render: function () {
+    render: function (recreate) {
         var self = this;
+
+        if (recreate === false) {
+            this.taskViews.forEach(function (taskView) { taskView.render(); });
+            return;
+        }
+
         this.$el.find("#tasks").empty();
 
         var tasks = this.model.tasks;
         tasks.each(function (task) {
             self.onTaskAdd(task, tasks);
         });
+    },
+    onModelChange: function () {
+        this.render(false);
     },
     onDocumentClick: function (event) {
         this.$el.find(".has-popover").each(function () {
@@ -114,6 +128,29 @@ var Page = Backbone.View.extend({
                 window.location.href = "/";
             }, tools.reportError);
     },
+    onNotificationsClick: function (event) {
+        event.preventDefault();
+
+        $(event.currentTarget).popover({
+            html: true,
+            content: $("#notificationsTemplate").html(),
+            placement: "auto",
+            trigger: "manual"
+        }).popover("show");
+
+        var self = this;
+
+        this.$el.find('.popoverNotifications input[type="checkbox"]')
+            .prop("checked", this.model.areNotificationsActive())
+            .on("change", function () {
+                var cbx = this;
+                self.model.setNotificationsActive(cbx.checked)
+                    .then(function () {
+                        cbx.checked = self.model.areNotificationsActive();
+                    });
+            });
+    },
+
     onAddTaskClick: function () {
         var self = this,
             editedTask = new Task();
@@ -138,6 +175,14 @@ var Page = Backbone.View.extend({
             self.taskModal.on("save", self.onTaskSave, self);
         });
     },
+    onRemoveTaskConfirmClick: function (event) {
+        $(event.currentTarget).popover({
+            html: true,
+            content: $("#deleteTemplate").html(),
+            placement: "left",
+            trigger: "manual"
+        }).popover("show");
+    },
     onRemoveTaskClick: function (event) {
         var $task = $(event.currentTarget).closest(".task");
         var taskId = $task.attr("data-id");
@@ -152,6 +197,15 @@ var Page = Backbone.View.extend({
             }, tools.reportError);
         });
     },
+    onDismissRemoveTaskClick: function (event) {
+        $(event.currentTarget).closest(".task").find(".removeTask").popover("hide");
+    },
+    onTaskMouseleave: function (event) {
+        var $el = $(event.currentTarget);
+
+        if ($el.find(".popover").length > 0)
+            $el.find(".removeTask").popover("destroy");
+    },
     onTaskSave: function() {
         var self = this;
         this.taskModal.model.save(this.model.tasks)
@@ -159,9 +213,15 @@ var Page = Backbone.View.extend({
                 self.taskModal.hide();
                 self.taskModal = null;
             }, tools.reportError);
+    },
+    onDueTasksCountChange: function () {
+        var count = this.model.dueTasksCount;
+        if (count === 0)
+            document.title = "Tasks";
+        else
+            document.title = "Tasks (" + count + ")";
     }
 });
-
 
 function _createView()
 {
@@ -214,7 +274,7 @@ function _createView()
         });
     });
 
-    */
+    
 
     $(document).on("click", ".task .removeTask", function () {
         $(this).popover({
@@ -233,14 +293,14 @@ function _createView()
        if ($(this).find(".popover").length > 0)
            $(this).find(".removeTask").popover("destroy");
     });
-
+    */
     // $(document).on("click", '.popoverDelete .buttons button[type="submit"]', _onRemoveTaskClick);
 
     // $(document).on("click", ".actions .editTask", _onEditTaskClick);
 
     // $("#logout").click(_onLogoutClick);
     $("#devices").click(_onDevicesClick);
-    $("#notifications").click(_onNotificationsClick);
+    // $("#notifications").click(_onNotificationsClick);
     // $("#addTask").on("click", _onAddTaskClick);
     // $("#saveTask").on("click", _onSaveTaskClick);
 
@@ -266,13 +326,13 @@ function _createView()
     };
     
     _setupManualBindings();
-}*/
+}
 
 function _setupManualBindings()
 {
     // because of using custom controls, we can't bind automatically in some cases
 
-    /*var setting;
+    var setting;
 
     _viewModel.editedTask.reminderImportant.subscribe(function (value) {
         if (!setting)
@@ -327,7 +387,7 @@ function _setupManualBindings()
         _viewModel.editedTask.categories(categories);
         setting = false;
     });
-    */
+    
 
     updateNotificationsCount(notifications.dueTasksCount());
     notifications.dueTasksCount.subscribe(updateNotificationsCount);
@@ -339,6 +399,7 @@ function _setupManualBindings()
             document.title = "Tasks (" + count + ")";
     }
 }
+*/
 
 /*function _createPatch(editedTask, task)
 {
@@ -603,6 +664,7 @@ function _onDevicesClick(event)
         });
 }
 
+/*
 function _onNotificationsClick(event)
 {
     event.preventDefault();
@@ -625,3 +687,4 @@ function _onNotificationsClick(event)
                 });
         });
 }
+*/

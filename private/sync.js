@@ -274,7 +274,7 @@ function _mergePatches(userId)
             _id: patch.taskId,
             userId: patch.userId,
             name: patch.body.name,
-            categories: patch.body.categories,
+            categories: patch.body.categories || [],
             lastClientPatchId: patch.clientPatchId
         };
 

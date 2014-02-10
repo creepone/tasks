@@ -1,6 +1,7 @@
 var _ = require("underscore"),
     Backbone = require("backbone"),
     ajax = require("../../model/ajax"),
+    Notifications = require("../../model/notifications").Notifications,
     Task = require("../task").Task;
 
 var Tasks = Backbone.Collection.extend({
@@ -16,9 +17,16 @@ var Tasks = Backbone.Collection.extend({
 });
 
 var IndexPageModel = Backbone.Model.extend({
-    properties: "tasks",
-    initialize: function() {
+    properties: "tasks,dueTasksCount",
+    initialize: function () {
+        var self = this;
         this.tasks = new Tasks(this.tasks || []);
+        this.notifications = new Notifications({ tasks: this.tasks });
+
+        this.dueTasksCount = this.notifications.dueTasksCount;
+        this.listenTo(this.notifications, "change:dueTasksCount", function () {
+            self.dueTasksCount = self.notifications.dueTasksCount;
+        });
     },
     logout: function () {
         return ajax.logout()
@@ -26,6 +34,12 @@ var IndexPageModel = Backbone.Model.extend({
                 if (localStorage && localStorage.getItem("openid"))
                     localStorage.removeItem("openid");
             });
+    },
+    areNotificationsActive: function () {
+        return this.notifications.isActive();
+    },
+    setNotificationsActive: function (active) {
+        return this.notifications.setActive(active);
     }
 });
 
