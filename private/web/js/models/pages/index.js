@@ -1,8 +1,11 @@
 var _ = require("underscore"),
     Backbone = require("backbone"),
-    ajax = require("../../model/ajax"),
-    Notifications = require("../../model/notifications").Notifications,
+    moment = require("moment"),
+    ajax = require("../../services/ajax"),
+    Notifications = require("../../services/notifications").Notifications,
     Task = require("../task").Task;
+
+var _dateFormat = "DD.MM.YYYY HH:mm";
 
 var Tasks = Backbone.Collection.extend({
     model: Task,
@@ -40,6 +43,19 @@ var IndexPageModel = Backbone.Model.extend({
     },
     setNotificationsActive: function (active) {
         return this.notifications.setActive(active);
+    },
+    getDevices: function () {
+        return ajax.getDeviceStats()
+            .then(function (stats) {
+                return stats.devices.map(function (device) {
+                    var res = _.extend({}, device);
+                    if (!res.version)
+                        res.version = "never";
+                    else
+                        res.version = moment(new Date(res.version)).format(_dateFormat);
+                    return res;
+                });
+            });
     }
 });
 

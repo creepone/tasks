@@ -23,34 +23,6 @@ block content
 
   #tasks
 
-  #oldTasks(data-bind="foreach: tasks")
-    .task(data-bind="attr: { 'data-id': _id }")
-      .actions
-        button.removeTask.close: i.glyphicon.glyphicon-remove
-        button.editTask.close: i.glyphicon.glyphicon-pencil
-      h4.name(data-bind="text: name, css: { 'text-info': !isDue(), 'text-danger': isDue() }")
-      div(data-bind="if: $data.reminder")
-        p: small.time(data-bind="text: reminder.timeText, attr: { 'data-important': reminder.important }")
-      div(data-bind="foreach: categories")
-        span.label.label-default(data-bind="text: $data")
-      pre(data-bind="if: $data.notes")
-        small(data-bind="text: notes")
-      hr
-
-  script#devicesTemplate(type="text/html").
-    <div class="popoverDevices" data-bind="foreach: devices">
-      <div>
-        <i class="glyphicon glyphicon-ok" data-bind="visible: !needsSync" />
-        <i class="glyphicon glyphicon-refresh" data-bind="visible: needsSync" />
-        <small><strong data-bind="text: name" /></small>
-      </div>
-      <div>
-        <small data-bind="text: version" />
-      </div>
-      <hr />
-    </div>
-    <small data-bind="visible: devices.length == 0">No devices configured.</small>
-
   script#notificationsTemplate(type="text/html").
     <div class="popoverNotifications">
       <small><strong>Use notifications: </strong></small>
@@ -71,3 +43,6 @@ block content
 
   script(id="task-modal-template", type="text/template")
     include templates/task-modal.html
+
+  script(id="devices-template", type="text/html")
+    include templates/devices.html

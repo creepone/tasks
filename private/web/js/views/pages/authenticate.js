@@ -1,9 +1,9 @@
 var $ = require("jquery"),
     ko = require("knockout"),
     Q = require("q"),
-    ajax = require("./model/ajax"),
-    authentication = require("./model/authentication"),
-    tools = require("./model/tools");
+    ajax = require("./../../services/ajax"),
+    authentication = require("./../../services/authentication"),
+    tools = require("./../../services/tools");
 
 require("bootstrap");
 

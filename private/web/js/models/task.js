@@ -2,7 +2,7 @@ var _ = require("underscore"),
     moment = require("moment"),
     Backbone = require("backbone"),
     Q = require("q"),
-    ajax = require("../model/ajax");
+    ajax = require("../services/ajax");
 
 var _dateFormat = "DD.MM.YYYY HH:mm";
 

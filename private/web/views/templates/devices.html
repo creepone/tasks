@@ -1,0 +1,15 @@
+<div class="popoverDevices">
+    <% devices.forEach(function (device) { %>
+        <div>
+            <i class="glyphicon glyphicon-<%= device.needsSync ? 'refresh' : 'ok' %>"/>
+            <small><strong><%- device.name %></strong></small>
+        </div>
+        <div>
+            <small><%- device.version %></small>
+        </div>
+        <hr />
+    <% }); %>
+</div>
+<% if (devices.length == 0) { %>
+    <small>No devices configured.</small>
+<% } %>

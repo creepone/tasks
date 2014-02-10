@@ -6,7 +6,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON("package.json"),
         build: {
-            scripts: { files: [{ src: "./private/web/js/*.js", dest: "./public/js" }] },
+            scripts: { files: [{ src: "./private/web/js/views/pages/*.js", dest: "./public/js" }] },
             stylesheets: { files: [{ src: "./private/web/styles/*.less", dest: "./public/styles" }] }
         },
         watch: {

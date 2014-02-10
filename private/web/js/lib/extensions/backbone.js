@@ -1,6 +1,6 @@
 var Backbone = require("../backbone"),
     _ = require("underscore"),
-    ajax = require("../../model/ajax").ajax;
+    ajax = require("../../services/ajax").ajax;
 
 Backbone.ajax = ajax;
 
