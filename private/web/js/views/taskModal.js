@@ -32,7 +32,7 @@ var TaskModalView = Backbone.View.extend({
         $el.appendTo(document.body);
         this.setElement($el[0]);
 
-        $el.find('input[type="checkbox"]').bootstrapSwitch();
+        $el.find("input[type='checkbox']").bootstrapSwitch();
 
         // hack to convince moment english week starts on Monday
         moment()._lang._week.dow = 1;
@@ -79,7 +79,7 @@ var TaskModalView = Backbone.View.extend({
         this.$el.find("input:first").focus();
     },
     onModalHidden: function (event) {
-        // todo: destroy all the widgets used in the modal here
+        this.$el.find(".input-group.date").data("DateTimePicker").destroy();
         this.remove();
     },
     onPropertyChange: function (event) {

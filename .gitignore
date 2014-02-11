@@ -1,3 +1,4 @@
 .DS_Store
 .idea
+run.bat
 node_modules/.bin

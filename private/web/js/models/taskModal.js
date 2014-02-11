@@ -27,4 +27,3 @@ var TaskModal = Backbone.Model.extend({
 _.extend(exports, {
     TaskModal: TaskModal
 });
-
