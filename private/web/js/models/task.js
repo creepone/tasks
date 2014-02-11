@@ -2,6 +2,7 @@ var _ = require("underscore"),
     moment = require("moment"),
     Backbone = require("backbone"),
     Q = require("q"),
+    tools = require("../services/tools"),
     ajax = require("../services/ajax");
 
 var _dateFormat = "DD.MM.YYYY HH:mm";
@@ -108,7 +109,7 @@ var Task = Backbone.Model.extend({
             if (this.notes !== exTask.notes)
                 patch.body.notes = { old: exTask.notes, new: this.notes };
 
-            var categoriesDiff = this._arrayDiff(exTask.categories, this.categories);
+            var categoriesDiff = tools.arrayDiff(exTask.categories, this.categories);
             if (categoriesDiff)
                 patch.body.categories = categoriesDiff;
 
@@ -137,23 +138,6 @@ var Task = Backbone.Model.extend({
             return undefined;
 
         return patch;
-    },
-    _arrayDiff: function(oldArray, newArray) {
-        oldArray = oldArray || [];
-        newArray = newArray || [];
-
-        var toAdd = newArray.filter(function (i) { return oldArray.indexOf(i) < 0; });
-        var toRemove = oldArray.filter(function(i) { return newArray.indexOf(i) < 0; });
-
-        if (toAdd.length == 0 && toRemove.length == 0)
-            return undefined;
-
-        var res = {};
-        if (toAdd.length > 0)
-            res.add = toAdd;
-        if (toRemove.length > 0)
-            res.remove = toRemove;
-        return res;
     }
 });
 

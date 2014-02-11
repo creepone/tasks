@@ -3,6 +3,7 @@ var _ = require("underscore"),
     moment = require("moment"),
     ajax = require("../../services/ajax"),
     Notifications = require("../../services/notifications").Notifications,
+    Categories = require("../categories").Categories,
     Task = require("../task").Task;
 
 var _dateFormat = "DD.MM.YYYY HH:mm";
@@ -25,6 +26,7 @@ var IndexPageModel = Backbone.Model.extend({
         var self = this;
         this.tasks = new Tasks(this.tasks || []);
         this.notifications = new Notifications({ tasks: this.tasks });
+        this.categories = new Categories({ tasks: this.tasks }).categories;
 
         this.dueTasksCount = this.notifications.dueTasksCount;
         this.listenTo(this.notifications, "change:dueTasksCount", function () {

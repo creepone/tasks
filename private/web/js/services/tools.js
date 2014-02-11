@@ -1,6 +1,24 @@
 var $ = require("jquery"),
     Q = require("q");
 
+exports.arrayDiff = function (oldArray, newArray) {
+    oldArray = oldArray || [];
+    newArray = newArray || [];
+
+    var toAdd = newArray.filter(function (i) { return oldArray.indexOf(i) < 0; });
+    var toRemove = oldArray.filter(function (i) { return newArray.indexOf(i) < 0; });
+
+    if (toAdd.length == 0 && toRemove.length == 0)
+        return undefined;
+
+    var res = {};
+    if (toAdd.length > 0)
+        res.add = toAdd;
+    if (toRemove.length > 0)
+        res.remove = toRemove;
+    return res;
+};
+
 exports.parseUri = function(str) {
 
     // parseUri 1.2.2
