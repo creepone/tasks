@@ -1,7 +1,8 @@
 var $ = require("jquery"),
     _ = require("underscore"),
     moment = require("moment"),
-    Backbone = require("backbone");
+    Backbone = require("backbone"),
+    tools = require("../services/tools");
 
 require("typeahead");
 
@@ -26,7 +27,7 @@ var TaskModalView = Backbone.View.extend({
         "input .twitter-typeahead": "onTypeaheadInput"
     },
     render: function() {
-        var template = _.template($("#task-modal-template").html(), { task: this.model });
+        var template = _.template($("#task-modal-template").html(), { task: this.model.task });
         var $el = $(template);
         $el.appendTo(document.body);
         this.setElement($el[0]);
@@ -45,7 +46,7 @@ var TaskModalView = Backbone.View.extend({
         });
 
         $categories.tagsinput("input").typeahead({ highlight: true }, {
-            source: function (term, cb) { return cb([{ value: "test" }, { value: "one" }, { value: "two" }]); }
+            source: this.model.typeaheadSource()
         });
     },
 
@@ -58,7 +59,7 @@ var TaskModalView = Backbone.View.extend({
     },
     transformDate: function (input) {
         var val = $(input).val();
-        var transformed = this.model.transformDate(val);
+        var transformed = this.model.task.transformDate(val);
         if (!transformed)
             return;
 
@@ -68,27 +69,32 @@ var TaskModalView = Backbone.View.extend({
     },
 
     onSaveTaskClick: function (event) {
-        this.trigger("save");
+        var self = this;
+        this.model.save()
+            .done(function () {
+                self.hide();
+            }, tools.reportError);
     },
     onModalShown: function (event) {
         this.$el.find("input:first").focus();
     },
     onModalHidden: function (event) {
+        // todo: destroy all the widgets used in the modal here
         this.remove();
     },
     onPropertyChange: function (event) {
         var $el = $(event.currentTarget);
         var property = $el.attr("data-bind");
         var value = $el.val();
-        this.model.set(property, value);
+        this.model.task.set(property, value);
 
         if (property == "name")
             this.$el.find("#saveTask").prop({ disabled: !value });
     },
     onReminderImportantChange: function (event, data) {
-        var reminder = this.model.reminder || {};
+        var reminder = this.model.task.reminder || {};
         _.extend(reminder, { important: data.value });
-        this.model.reminder = reminder;
+        this.model.task.reminder = reminder;
     },
     onDateInputKeydown: function (event) {
         if (event.keyCode == 13) {
@@ -108,9 +114,9 @@ var TaskModalView = Backbone.View.extend({
         if (!("date" in event))
             return;
 
-        var reminder = this.model.reminder || {};
+        var reminder = this.model.task.reminder || {};
         _.extend(reminder, { time: event.date && +event.date });
-        this.model.reminder = reminder;
+        this.model.task.reminder = reminder;
     },
     onCategoriesFocus: function (event) {
         this.$el.find(".bootstrap-tagsinput").addClass("focus");
@@ -133,7 +139,7 @@ var TaskModalView = Backbone.View.extend({
         $input.attr({ placeholder: placeholder });
         $input.typeahead("val", "");
 
-        this.model.categories = value ? value.split(",") : [];
+        this.model.task.categories = value ? value.split(",") : [];
     },
     onTypeaheadSelected: function (event, selected) {
         var $categories = this.$el.find(".categories");

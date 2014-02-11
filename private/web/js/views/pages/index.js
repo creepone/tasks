@@ -1,11 +1,12 @@
 var $ = require("jquery"),
-    authentication = require("./../../services/authentication"),
-    tools = require("./../../services/tools"),
+    authentication = require("../../services/authentication"),
+    tools = require("../../services/tools"),
     Backbone = require("backbone"),
-    IndexPageModel = require("./../../models/pages/index").IndexPageModel,
-    Task = require("./../../models/task").Task,
-    TaskView = require("./../task").TaskView,
-    TaskModalView = require('./../taskModal').TaskModalView;
+    IndexPageModel = require("../../models/pages/index").IndexPageModel,
+    Task = require("../../models/task").Task,
+    TaskView = require("../task").TaskView,
+    TaskModal = require("../../models/taskModal").TaskModal,
+    TaskModalView = require('../taskModal').TaskModalView;
 
 require("bootstrap");
 require("bootstrap-switch");
@@ -162,28 +163,14 @@ var Page = Backbone.View.extend({
     },
 
     onAddTaskClick: function () {
-        var self = this,
-            editedTask = new Task();
-
-        authentication.assertAuthenticated().done(function () {
-            self.taskModal = new TaskModalView({ model: editedTask });
-            self.taskModal.show();
-            self.taskModal.on("save", self.onTaskSave, self);
-        });
+        this._showTaskModal(new Task());
     },
     onEditTaskClick: function (event) {
         var $task = $(event.currentTarget).closest(".task");
         var taskId = $task.attr("data-id");
+        var task = this.model.tasks.getById(taskId);
 
-        var self = this,
-            task = this.model.tasks.getById(taskId),
-            editedTask = task.clone();
-
-        authentication.assertAuthenticated().done(function () {
-            self.taskModal = new TaskModalView({ model: editedTask });
-            self.taskModal.show();
-            self.taskModal.on("save", self.onTaskSave, self);
-        });
+        this._showTaskModal(task.clone());
     },
     onRemoveTaskConfirmClick: function (event) {
         $(event.currentTarget).popover({
@@ -216,19 +203,21 @@ var Page = Backbone.View.extend({
         if ($el.find(".popover").length > 0)
             $el.find(".removeTask").popover("destroy");
     },
-    onTaskSave: function() {
-        var self = this;
-        this.taskModal.model.save(this.model.tasks)
-            .done(function () {
-                self.taskModal.hide();
-                self.taskModal = null;
-            }, tools.reportError);
-    },
     onDueTasksCountChange: function () {
         var count = this.model.dueTasksCount;
         if (count === 0)
             document.title = "Tasks";
         else
             document.title = "Tasks (" + count + ")";
+    },
+
+    _showTaskModal: function (task) {
+        var self = this;
+
+        authentication.assertAuthenticated().done(function () {
+            var model = new TaskModal({ task: task, tasks: self.model.tasks, categories: self.model.categories });
+            var taskModal = new TaskModalView({ model: model });
+            taskModal.show();
+        });
     }
 });
