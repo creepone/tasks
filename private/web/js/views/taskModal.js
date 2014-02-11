@@ -3,6 +3,8 @@ var $ = require("jquery"),
     moment = require("moment"),
     Backbone = require("backbone");
 
+require("typeahead");
+
 var _dateFormat = "DD.MM.YYYY HH:mm";
 
 var TaskModalView = Backbone.View.extend({
@@ -18,7 +20,10 @@ var TaskModalView = Backbone.View.extend({
         "change.dp .input-group.date": "onDateChange",
         "focus .bootstrap-tagsinput input": "onCategoriesFocus",
         "blur .bootstrap-tagsinput input": "onCategoriesBlur",
-        "change .categories": "onCategoriesChange"
+        "change .categories": "onCategoriesChange",
+        "typeahead:selected input": "onTypeaheadSelected",
+        "typeahead:cursorchanged  input": "onTypeaheadCursorChanged",
+        "input .twitter-typeahead": "onTypeaheadInput"
     },
     render: function() {
         var template = _.template($("#task-modal-template").html(), { task: this.model });
@@ -34,8 +39,13 @@ var TaskModalView = Backbone.View.extend({
             format: _dateFormat
         });
 
-        $el.find(".categories").tagsinput({
+        var $categories = $el.find(".categories");
+        $categories.tagsinput({
             tagClass: function() { return "label label-default"; }
+        });
+
+        $categories.tagsinput("input").typeahead({ highlight: true }, {
+            source: function (term, cb) { return cb([{ value: "test" }, { value: "one" }, { value: "two" }]); }
         });
     },
 
@@ -119,9 +129,24 @@ var TaskModalView = Backbone.View.extend({
     onCategoriesChange: function (event) {
         var value = $(event.currentTarget).val();
         var placeholder = value ? "" : "Categories";
-        this.$el.find(".bootstrap-tagsinput input").attr({ placeholder: placeholder });
+        var $input = this.$el.find(".bootstrap-tagsinput input");
+        $input.attr({ placeholder: placeholder });
+        $input.typeahead("val", "");
 
         this.model.categories = value ? value.split(",") : [];
+    },
+    onTypeaheadSelected: function (event, selected) {
+        var $categories = this.$el.find(".categories");
+        $categories.tagsinput("add", selected.value);
+    },
+    onTypeaheadCursorChanged: function (event) {
+        this.$el.find(".bootstrap-tagsinput input").attr({ placeholder: "" });
+    },
+    onTypeaheadInput: function (event) {
+        var typeaheadVal = $(event.currentTarget).find(".tt-input").val();
+        var $categories = this.$el.find(".categories");
+        var placeholder = ($categories.val() || typeaheadVal) ? "" : "Categories";
+        this.$el.find(".bootstrap-tagsinput input").attr({ placeholder: placeholder });
     }
 });
 
