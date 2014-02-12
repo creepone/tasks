@@ -14,6 +14,8 @@ function ajax(o) {
                         o.retryAuthenticate = false;
                         return ajax(o);
                     });
+            else if (res.status == 403)
+                window.location.href = "/authenticate";
             else
                 throw new Error(res.responseText || "Unknown error");
         });
