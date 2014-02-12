@@ -24,7 +24,8 @@ var TaskModalView = Backbone.View.extend({
         "change .categories": "onCategoriesChange",
         "typeahead:selected input": "onTypeaheadSelected",
         "typeahead:cursorchanged  input": "onTypeaheadCursorChanged",
-        "input .twitter-typeahead": "onTypeaheadInput"
+        "input .twitter-typeahead": "onTypeaheadInput",
+        "blur .tt-input": "onTypeaheadBlur"
     },
     render: function() {
         var template = _.template($("#task-modal-template").html(), { task: this.model.task });
@@ -153,6 +154,10 @@ var TaskModalView = Backbone.View.extend({
         var $categories = this.$el.find(".categories");
         var placeholder = ($categories.val() || typeaheadVal) ? "" : "Categories";
         this.$el.find(".bootstrap-tagsinput input").attr({ placeholder: placeholder });
+    },
+    onTypeaheadBlur: function (event) {
+        var $input = this.$el.find(".bootstrap-tagsinput input");
+        $input.typeahead("val", "");
     }
 });
 
