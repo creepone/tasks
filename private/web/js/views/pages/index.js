@@ -39,8 +39,8 @@ var Page = Backbone.View.extend({
         this.listenTo(model.tasks, "remove", this.onTaskRemove);
         this.listenTo(model.tasks, "sort", this.onTasksSort);
 
-        this.$el.find("#loader").hide();
-        this.$el.find("#addTask").focus();
+        this.$("#loader").hide();
+        this.$("#addTask").focus();
         setInterval(function () { model.tasks.fetch().catch(tools.reportError); }, 300000);
 
         this.onDueTasksCountChange();
@@ -66,7 +66,7 @@ var Page = Backbone.View.extend({
             model: task
         });
 
-        this.$el.find("#tasks").insertAt(index, taskView.el);
+        this.$("#tasks").insertAt(index, taskView.el);
         this.taskViews.splice(index, 0, taskView);
         taskView.render();
 
@@ -80,7 +80,7 @@ var Page = Backbone.View.extend({
     },
     onTasksSort: function (tasks) {
         var self = this,
-            $tasks = this.$el.find("#tasks");
+            $tasks = this.$("#tasks");
 
         this.taskViews = _.sortBy(this.taskViews, function (v) { return self.model.tasks.indexOf(v.model); });
         var elements = _.pluck(this.taskViews, "el");
@@ -95,7 +95,7 @@ var Page = Backbone.View.extend({
             return;
         }
 
-        var $tasks = this.$el.find("#tasks");
+        var $tasks = this.$("#tasks");
         $tasks.empty();
 
         this.taskViews = this.model.tasks.map(function (task) {
@@ -109,7 +109,7 @@ var Page = Backbone.View.extend({
         this.render(false);
     },
     onDocumentClick: function (event) {
-        this.$el.find(".has-popover").each(function () {
+        this.$(".has-popover").each(function () {
             if (!$(this).is(event.target) && $(this).has(event.target).length === 0 && $(".popover").has(event.target).length === 0) {
                 $(this).popover("destroy");
             }
@@ -135,7 +135,7 @@ var Page = Backbone.View.extend({
 
         var self = this;
 
-        this.$el.find('.popoverNotifications input[type="checkbox"]')
+        this.$('.popoverNotifications input[type="checkbox"]')
             .prop("checked", this.model.areNotificationsActive())
             .on("change", function () {
                 var cbx = this;

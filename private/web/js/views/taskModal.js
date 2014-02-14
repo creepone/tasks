@@ -33,15 +33,15 @@ var TaskModalView = Backbone.View.extend({
         $el.appendTo(document.body);
         this.setElement($el[0]);
 
-        $el.find("input[type='checkbox']").bootstrapSwitch();
+        this.$("input[type='checkbox']").bootstrapSwitch();
 
         // hack to convince moment english week starts on Monday
         moment()._lang._week.dow = 1;
-        $el.find(".input-group.date").datetimepicker({
+        this.$(".input-group.date").datetimepicker({
             format: _dateFormat
         });
 
-        var $categories = $el.find(".categories");
+        var $categories = this.$(".categories");
         $categories.tagsinput({
             tagClass: function() { return "label label-default"; }
         });
@@ -66,7 +66,7 @@ var TaskModalView = Backbone.View.extend({
 
         var date = moment(transformed);
         this.onDateChange({ date: date });
-        this.$el.find(".input-group.date").data("DateTimePicker").setDate(date);
+        this.$(".input-group.date").data("DateTimePicker").setDate(date);
     },
 
     onSaveTaskClick: function (event) {
@@ -77,10 +77,10 @@ var TaskModalView = Backbone.View.extend({
             }, tools.reportError);
     },
     onModalShown: function (event) {
-        this.$el.find("input:first").focus();
+        this.$("input:first").focus();
     },
     onModalHidden: function (event) {
-        this.$el.find(".input-group.date").data("DateTimePicker").destroy();
+        this.$(".input-group.date").data("DateTimePicker").destroy();
         this.remove();
     },
     onPropertyChange: function (event) {
@@ -90,7 +90,7 @@ var TaskModalView = Backbone.View.extend({
         this.model.task.set(property, value);
 
         if (property == "name")
-            this.$el.find("#saveTask").prop({ disabled: !value });
+            this.$("#saveTask").prop({ disabled: !value });
     },
     onReminderImportantChange: function (event, data) {
         var reminder = this.model.task.reminder || {};
@@ -108,7 +108,7 @@ var TaskModalView = Backbone.View.extend({
     onDateInputChange: function (event) {
         if (!$(event.currentTarget).val()) {
             this.onDateChange({ date: null });
-            this.$el.find(".input-group.date").data("DateTimePicker").setDate(null);
+            this.$(".input-group.date").data("DateTimePicker").setDate(null);
         }
     },
     onDateChange: function (event) {
@@ -120,11 +120,11 @@ var TaskModalView = Backbone.View.extend({
         this.model.task.reminder = reminder;
     },
     onCategoriesFocus: function (event) {
-        this.$el.find(".bootstrap-tagsinput").addClass("focus");
+        this.$(".bootstrap-tagsinput").addClass("focus");
     },
     onCategoriesBlur: function (event) {
-        this.$el.find(".bootstrap-tagsinput").removeClass("focus");
-        var $categories = this.$el.find(".categories");
+        this.$(".bootstrap-tagsinput").removeClass("focus");
+        var $categories = this.$(".categories");
 
         var $el = $(event.currentTarget);
 
@@ -136,27 +136,27 @@ var TaskModalView = Backbone.View.extend({
     onCategoriesChange: function (event) {
         var value = $(event.currentTarget).val();
         var placeholder = value ? "" : "Categories";
-        var $input = this.$el.find(".bootstrap-tagsinput input");
+        var $input = this.$(".bootstrap-tagsinput input");
         $input.attr({ placeholder: placeholder });
         $input.typeahead("val", "");
 
         this.model.task.categories = value ? value.split(",") : [];
     },
     onTypeaheadSelected: function (event, selected) {
-        var $categories = this.$el.find(".categories");
+        var $categories = this.$(".categories");
         $categories.tagsinput("add", selected.value);
     },
     onTypeaheadCursorChanged: function (event) {
-        this.$el.find(".bootstrap-tagsinput input").attr({ placeholder: "" });
+        this.$(".bootstrap-tagsinput input").attr({ placeholder: "" });
     },
     onTypeaheadInput: function (event) {
         var typeaheadVal = $(event.currentTarget).find(".tt-input").val();
-        var $categories = this.$el.find(".categories");
+        var $categories = this.$(".categories");
         var placeholder = ($categories.val() || typeaheadVal) ? "" : "Categories";
-        this.$el.find(".bootstrap-tagsinput input").attr({ placeholder: placeholder });
+        this.$(".bootstrap-tagsinput input").attr({ placeholder: placeholder });
     },
     onTypeaheadBlur: function (event) {
-        var $input = this.$el.find(".bootstrap-tagsinput input");
+        var $input = this.$(".bootstrap-tagsinput input");
         $input.typeahead("val", "");
     }
 });
