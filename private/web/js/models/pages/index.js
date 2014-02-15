@@ -58,6 +58,20 @@ var IndexPageModel = Backbone.Model.extend({
                     return res;
                 });
             });
+    },
+    getSelectedCategories: function () {
+        return this.categories
+            .filter(function (cat) { return cat.selected; })
+            .map(function (cat) { return cat.name; })
+    },
+    getTaskFilter: function () {
+        var categories = this.getSelectedCategories();
+        if (categories.length == 0)
+            return function () { return true; };
+
+        return function (task) { 
+            return _.intersection(categories, task.categories || []).length > 0;
+        }; 
     }
 });
 

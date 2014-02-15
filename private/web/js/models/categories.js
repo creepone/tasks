@@ -9,7 +9,7 @@ var Categories = Backbone.Collection.extend({
 });
 
 var Category = Backbone.Model.extend({
-    properties: "name,count"
+    properties: "name,count,selected"
 });
 
 var CategoriesService = Backbone.Model.extend({

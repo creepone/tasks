@@ -18,10 +18,12 @@ block content
     .well.well-transparent.lead.text-center
       img(src="../img/spinner.gif")
 
-  button.btn.btn-sm.btn-primary#addTask(type="button") Add Task
-  hr
-
-  #tasks
+  .col-md-3
+    #categories
+  .col-md-9
+    button.btn.btn-sm.btn-primary#addTask(type="button") Add Task
+    hr
+    #tasks
 
   script#notificationsTemplate(type="text/html").
     <div class="popoverNotifications">

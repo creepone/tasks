@@ -6,7 +6,8 @@ var $ = require("jquery"),
     Task = require("../../models/task").Task,
     TaskView = require("../task").TaskView,
     TaskModal = require("../../models/taskModal").TaskModal,
-    TaskModalView = require('../taskModal').TaskModalView;
+    TaskModalView = require("../taskModal").TaskModalView,
+    CategoriesView = require("../categories").CategoriesView;
 
 require("bootstrap");
 require("bootstrap-switch");
@@ -38,6 +39,8 @@ var Page = Backbone.View.extend({
         this.listenTo(model.tasks, "add", this.onTaskAdd);
         this.listenTo(model.tasks, "remove", this.onTaskRemove);
         this.listenTo(model.tasks, "sort", this.onTasksSort);
+
+        this.listenTo(model.categories, "change:selected", this.onCategoriesSelectionChange);
 
         this.$("#loader").hide();
         this.$("#addTask").focus();
@@ -86,21 +89,34 @@ var Page = Backbone.View.extend({
         var elements = _.pluck(this.taskViews, "el");
         $(_.sortBy($tasks.children(), function (el) { return elements.indexOf(el); })).appendTo($tasks);
     },
+    onCategoriesSelectionChange: function () {
+        this.render(false);
+    },
 
     render: function (recreate) {
-        var self = this;
+        var self = this,
+            filter = this.model.getTaskFilter();
 
         if (recreate === false) {
-            this.taskViews.forEach(function (taskView) { taskView.render(); });
+            this.taskViews.forEach(function (taskView) { 
+                taskView.render();
+                $(taskView.el).toggle(!!filter(taskView.model));
+            });
             return;
         }
+
+        this.$("#categories").empty();
+        var categoriesView = new CategoriesView({ model: this.model.categories });
+        this.$("#categories").append(categoriesView.el);
+        categoriesView.render();
+        this.categoriesView = categoriesView;
 
         var $tasks = this.$("#tasks");
         $tasks.empty();
 
         this.taskViews = this.model.tasks.map(function (task) {
             var taskView = new TaskView({ model: task });
-            $tasks.append(taskView.el);
+            $(taskView.el).toggle(!!filter(task)).appendTo($tasks);
             taskView.render();
             return taskView;
         });
@@ -163,7 +179,9 @@ var Page = Backbone.View.extend({
     },
 
     onAddTaskClick: function () {
-        this._showTaskModal(new Task());
+        var task = new Task();
+        task.categories = this.model.getSelectedCategories();
+        this._showTaskModal(task);
     },
     onEditTaskClick: function (event) {
         var $task = $(event.currentTarget).closest(".task");
