@@ -43,14 +43,14 @@ var authFilters = {
             db.getDevice({ token: req.body.token })
                 .done(function (device) {
                     if (!device)
-                        return res.send(403, "Device not found.");
+                        return res.send(403, {});
 
                     req.device = device;
                     next();
                 },
                 function (err) {
                     console.log(err);
-                    res.send(500, err.toString());
+                    res.send({ error: err.toString() });
                 });
         },
         pages: function (req, res, next) {
