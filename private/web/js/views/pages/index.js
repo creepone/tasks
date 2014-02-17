@@ -55,6 +55,9 @@ var Page = Backbone.View.extend({
         "click #notifications": "onNotificationsClick",
         "click #devices": "onDevicesClick",
         "click #addTask": "onAddTaskClick",
+        "click #expandAll": "onExpandAllClick",
+        "click #collapseAll": "onCollapseAllClick",
+        "click .task": "onTaskClick",
         "click .actions .editTask": "onEditTaskClick",
         "click .task .removeTask": "onRemoveTaskConfirmClick",
         "click .popoverDelete .buttons button[type='submit']": "onRemoveTaskClick",
@@ -177,17 +180,31 @@ var Page = Backbone.View.extend({
 
             }, tools.reportError);
     },
+    onExpandAllClick: function (event) {
+        this.model.tasks.each(function (task) {
+            task.expanded = true;
+        });
+    },
+    onCollapseAllClick: function (event) {
+        this.model.tasks.each(function (task) {
+            task.expanded = false;
+        });
+    },
 
+    onTaskClick: function (event) {
+        if ($(event.target).closest(".editTask,.removeTask,.popover-content").length)
+            return;
+
+        var task = this._getTask(event);
+        task.expanded = !task.expanded;
+    },
     onAddTaskClick: function () {
         var task = new Task();
         task.categories = this.model.getSelectedCategories();
         this._showTaskModal(task);
     },
     onEditTaskClick: function (event) {
-        var $task = $(event.currentTarget).closest(".task");
-        var taskId = $task.attr("data-id");
-        var task = this.model.tasks.getById(taskId);
-
+        var task = this._getTask(event);
         this._showTaskModal(task.clone());
     },
     onRemoveTaskConfirmClick: function (event) {
@@ -237,5 +254,10 @@ var Page = Backbone.View.extend({
             var taskModal = new TaskModalView({ model: model });
             taskModal.show();
         });
+    },
+    _getTask: function (event) {
+        var $task = $(event.currentTarget).closest(".task");
+        var taskId = $task.attr("data-id");
+        return this.model.tasks.getById(taskId);
     }
 });

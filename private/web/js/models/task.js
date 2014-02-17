@@ -8,7 +8,7 @@ var _ = require("underscore"),
 var _dateFormat = "DD.MM.YYYY HH:mm";
 
 var Task = Backbone.Model.extend({
-    properties: "_id,name,notes,categories,reminder,isDue",
+    properties: "_id,name,notes,categories,reminder,isDue,expanded",
     idAttribute: "_id",
 
     timeText: function () {

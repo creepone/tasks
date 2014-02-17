@@ -138,6 +138,14 @@ pre:empty {
   }
 }
 
+.task .body {
+   display: none;
+}
+
+.task.expanded .body {
+   display: block;
+}
+
 .task:hover .actions {
   display: block;
 }
@@ -171,4 +179,8 @@ i.glyphicon-ok {
 
 i.glyphicon-refresh {
   color: #b94a48;
+}
+
+.btn-sm {
+  margin-right: 5px;
 }

@@ -1,5 +1,8 @@
-<div class="task" data-id="<%= task._id %>">
+<div class="task <%= task.expanded ? "expanded" : "" %>" data-id="<%= task._id %>">
     <div class="actions">
+        <button class="expand close">
+            <i class="glyphicon glyphicon-chevron-<%= task.expanded ? "up" : "down" %>" />
+        </button>
         <button class="removeTask close">
             <i class="glyphicon glyphicon-remove" />
         </button>
@@ -10,24 +13,26 @@
     <h4 class="name <%= task.isDue ? 'text-danger' : 'text-info' %>">
         <%- task.name %>
     </h4>
-    <% if (task.reminder) { %>
-    <div>
-        <p>
-            <small class="time" <%= task.reminder.important ? "data-important" : "" %>>
-                <%- task.timeText() %>
-            </small>
-        </p>
+    <div class="body">
+        <% if (task.reminder) { %>
+        <div>
+            <p>
+                <small class="time" <%= task.reminder.important ? "data-important" : "" %>>
+                    <%- task.timeText() %>
+                </small>
+            </p>
+        </div>
+        <% } %>
+        <div>
+            <% (task.categories || []).forEach(function (category) { %>
+            <span class="label label-default"><%- category %></span>
+            <% }); %>
+        </div>
+        <% if (task.notes) { %>
+        <div class="well well-sm">
+            <small><%- task.notes %></small>
+        </div>
+        <% } %>
     </div>
-    <% } %>
-    <div>
-        <% (task.categories || []).forEach(function (category) { %>
-        <span class="label label-default"><%- category %></span>
-        <% }); %>
-    </div>
-    <% if (task.notes) { %>
-    <div class="well well-sm">
-        <small><%- task.notes %></small>
-    </div>
-    <% } %>
     <hr />
 </div>
