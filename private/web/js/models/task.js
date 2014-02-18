@@ -14,7 +14,12 @@ var Task = Backbone.Model.extend({
     timeText: function () {
         if (!this.reminder)
             return "";
-        return moment(new Date(this.reminder.time)).format(_dateFormat);
+        return moment(this.reminder.time).format(_dateFormat);
+    },
+    isDueToday: function () {
+        if (this.isDue)
+            return true;
+        return (+moment().startOf("day")) == (+moment(this.reminder.time).startOf("day"));
     },
     transformDate: function (value) {
         var patterns = {

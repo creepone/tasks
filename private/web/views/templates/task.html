@@ -1,4 +1,4 @@
-<div class="task <%= task.expanded ? "expanded" : "" %>" data-id="<%= task._id %>">
+<div class="task <%= task.expanded ? "expanded " : "" %><%= task.isDueToday() ? "today " : "" %>" data-id="<%= task._id %>">
     <div class="actions">
         <button class="expand close">
             <i class="glyphicon glyphicon-chevron-<%= task.expanded ? "up" : "down" %>" />

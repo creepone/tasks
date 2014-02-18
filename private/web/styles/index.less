@@ -114,11 +114,15 @@ pre:empty {
 
 .task {
   position: relative;
+  margin-top: -10px;
+  padding-top: 1px;
+  padding-left: 10px;
+  padding-right: 10px;
 
   .actions {
     position: absolute;
     right: 10px;
-    top: 0px;
+    top: 5px;
     display: none;
   }
 
@@ -144,6 +148,11 @@ pre:empty {
 
 .task.expanded .body {
    display: block;
+}
+
+.task.today {
+  background-color: #fcf8f2;
+
 }
 
 .task:hover .actions {
