@@ -19,6 +19,13 @@ exports.arrayDiff = function (oldArray, newArray) {
     return res;
 };
 
+exports.getSelection = function () {
+    if (window.getSelection)
+        return window.getSelection();
+    else if (document.selection)
+        return document.selection.createRange();
+};
+
 exports.parseUri = function(str) {
 
     // parseUri 1.2.2

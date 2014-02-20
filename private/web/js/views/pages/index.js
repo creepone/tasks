@@ -192,6 +192,9 @@ var Page = Backbone.View.extend({
     },
 
     onTaskClick: function (event) {
+        if (tools.getSelection().toString())
+            return;
+
         if ($(event.target).closest(".editTask,.removeTask,.popover-content").length)
             return;
 
