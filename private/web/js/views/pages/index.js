@@ -66,7 +66,8 @@ var Page = Backbone.View.extend({
     },
 
     onTaskAdd: function (task, tasks) {
-        var index = tasks.indexOf(task);
+        var index = tasks.indexOf(task),
+            filter = this.model.getTaskFilter();
 
         var taskView = new TaskView({
             model: task
@@ -76,8 +77,13 @@ var Page = Backbone.View.extend({
         this.taskViews.splice(index, 0, taskView);
         taskView.render();
 
-        $(taskView.el).addClass("fade-in");
-        setTimeout(function () { $(taskView.el).removeClass("fade-in"); }, 1000);
+        if (filter(taskView.model)) {
+            $(taskView.el).addClass("fade-in");
+            setTimeout(function () { $(taskView.el).removeClass("fade-in"); }, 1000);
+        }
+        else {
+            $(taskView.el).hide();
+        }
     },
     onTaskRemove: function (task, tasks) {
         var taskView = _.find(this.taskViews, function (v) { return v.model === task; });
