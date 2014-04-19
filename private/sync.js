@@ -134,6 +134,10 @@ function _insertPatches(device, patches)
         return db.updateDevice({ _id: otherDevice._id }, { $push: { toSync: patch._id }});
     }
 
+
+    if (!patches.length)
+        return Q();
+
     return db.findDevices({ userId: userId }, { lazy: false })
         .then(function (foundDevices) {
             if (!foundDevices)
