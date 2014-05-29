@@ -11,25 +11,25 @@ var Notifications = Backbone.Model.extend({
     },
 
     isActive: function () {
-        if (!localStorage || !webkitNotifications)
+        if (!localStorage || typeof Notification == "undefined")
             return false;
 
-        return !!localStorage.getItem("useNotifications") && webkitNotifications.checkPermission() == 0;
+        return !!localStorage.getItem("useNotifications") && Notification.permission == "granted";
     },
     setActive: function (active) {
-        if (!localStorage || !webkitNotifications)
+        if (!localStorage || typeof Notification == "undefined")
             return;
 
         if (!active) {
             localStorage.removeItem("useNotifications");
         }
         else {
-            if (webkitNotifications.checkPermission() == 0) {
+            if (Notification.permission == "granted") {
                 localStorage.setItem("useNotifications", "true");
             }
             else {
                 var deferred = Q.defer();
-                window.webkitNotifications.requestPermission(function () {
+                Notification.requestPermission(function () {
                     localStorage.setItem("useNotifications", "true");
                     deferred.resolve();
                 });
@@ -108,7 +108,12 @@ var Notifications = Backbone.Model.extend({
     },
     _showNotification: function (task) {
         var imageUrl = 'https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRS5s9iV9cTYdvz5d8OM4-W6q4JW2t0V_WZ1BVhUbD7RNWGeIHTRA';
-        webkitNotifications.createNotification(imageUrl, "Tasks", task.name).show();
+        
+        var notification = new Notification("Tasks", {
+            body: task.name,
+            icon: imageUrl
+        });
+        
         console.log("Showing notification at " + new Date(), task);
         this._obsoleteReminders.push(task);
     }
