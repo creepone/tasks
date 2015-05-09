@@ -441,7 +441,7 @@ function _mergePatches(userId)
 function _notifyDevices(devices)
 {
     var apnConn = new apn.Connection({
-        address: "gateway.sandbox.push.apple.com",
+        address: process.env.APN_URL || "gateway.sandbox.push.apple.com",
         certData: new Buffer(process.env.CERT_PEM, "base64"),
         keyData: new Buffer(process.env.KEY_PEM, "base64")
     });

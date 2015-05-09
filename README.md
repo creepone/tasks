@@ -18,6 +18,9 @@ Following environment variables are used for configuration:
 `MONGOHQ_URL`  
 &nbsp;&nbsp;URL of the mongo instance to be used. The default is to use the db `tasks` on `localhost`.
 
+`APN_URL`  
+&nbsp;&nbsp;URL of the Apple Push Notification Service to be used. The default is to use the sandbox version.
+
 `PORT`  
 &nbsp;&nbsp;HTTP port to listen on. The default is 8081.
 
