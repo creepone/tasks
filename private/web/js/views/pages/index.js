@@ -191,6 +191,7 @@ var Page = Backbone.View.extend({
         event.preventDefault();
         
         this.model.notifyAllDevices();
+        $("#devices").popover("destroy")
     },
     onExpandAllClick: function (event) {
         this.model.tasks.each(function (task) {
