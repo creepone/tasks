@@ -449,9 +449,9 @@ function _notifyDevices(devices)
     devices.forEach(function (device) {
         var apnDevice = new apn.Device(device.apnToken);
         var note = new apn.Notification();
-        note.setExpiry(Math.floor(Date.now() / 1000) + 24 * 3600); // valid for 1 hour
-        note.setContentAvailable(true);
-        note.setSound("");
+        note.expiry = Math.floor(Date.now() / 1000) + 24 * 3600; // valid for 1 hour
+        note.contentAvailable = true;
+        note.sound = "";
         apnConn.pushNotification(note, apnDevice);
     });
 }
