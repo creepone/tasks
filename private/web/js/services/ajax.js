@@ -46,6 +46,14 @@ $.extend(exports, {
             retryAuthenticate: true
         });
     },
+    notifyAllDevices: function () {
+        return ajax({
+            type: "POST",
+            url: "/sync/notifyAll",
+            dataType: "json",
+            retryAuthenticate: true
+        })
+    },
     getTasks: function () {
         return ajax({
             type: "GET",

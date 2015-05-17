@@ -84,6 +84,20 @@ exports.web =
             .then(function(tasks) {
                 res.send(tasks.map(_taskToClient));
             });
+    },
+    
+    notifyAll: function (req, res) {
+        return db.findDevices({ userId: new ObjectID(req.session.userId) }, { lazy: false })
+            .then(function (devices) {
+                var devicesToNotify = (devices || []).filter(function (device) {
+                    return !!device.apnToken;
+                });
+
+                if (devicesToNotify.length > 0)
+                    _notifyDevices(devicesToNotify);
+                    
+                res.json({});
+            });
     }
 };
 

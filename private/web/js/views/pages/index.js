@@ -54,6 +54,7 @@ var Page = Backbone.View.extend({
         "click #logout": "onLogoutClick",
         "click #notifications": "onNotificationsClick",
         "click #devices": "onDevicesClick",
+        "click .notify-all": "onNotifyAllDevicesClick",
         "click #addTask": "onAddTaskClick",
         "click #expandAll": "onExpandAllClick",
         "click #collapseAll": "onCollapseAllClick",
@@ -185,6 +186,11 @@ var Page = Backbone.View.extend({
                 }).popover("show");
 
             }, tools.reportError);
+    },
+    onNotifyAllDevicesClick: function (event) {
+        event.preventDefault();
+        
+        this.model.notifyAllDevices();
     },
     onExpandAllClick: function (event) {
         this.model.tasks.each(function (task) {

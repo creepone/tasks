@@ -59,6 +59,9 @@ var IndexPageModel = Backbone.Model.extend({
                 });
             });
     },
+    notifyAllDevices: function () {
+        return ajax.notifyAllDevices();
+    },
     getSelectedCategories: function () {
         return this.categories
             .filter(function (cat) { return cat.selected; })
