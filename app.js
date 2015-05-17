@@ -1,6 +1,7 @@
 var express = require('express'),
     jade = require("jade"),
-    router = require("./private/router");
+    router = require("./private/router"),
+    sync = require("./private/sync");
 	
 var app = express();
 
@@ -16,3 +17,5 @@ app.configure(function () {
 });
 
 app.listen(process.env.PORT || 8081);
+
+sync.device.monitor();

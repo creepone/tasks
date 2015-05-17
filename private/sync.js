@@ -51,7 +51,9 @@ exports.device =
             .then(function() {
                 res.json({});
             });
-    }
+    },
+    
+    monitor: _monitorDevices
 };
 
 exports.web =
@@ -454,6 +456,25 @@ function _notifyDevices(devices)
         apnConn.pushNotification(note, apnDevice);
     });
 }
+
+function _monitorDevices() {
+    var options = {
+        batchFeedback: true,
+        interval: 300,
+        cert: new Buffer(process.env.CERT_PEM, "base64"),
+        key: new Buffer(process.env.KEY_PEM, "base64")
+    };
+
+    var feedback = new apn.Feedback(options);
+    feedback.on("feedback", function(devices) {
+        console.log("notification feedback");
+        
+        devices.forEach(function(item) {
+            console.log("notification feedback received for " + item.device);
+        });
+    });
+}
+
 
 function _taskToClient(task)
 {
