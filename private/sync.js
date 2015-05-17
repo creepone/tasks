@@ -448,6 +448,8 @@ function _notifyDevices(devices)
     });
 
     devices.forEach(function (device) {
+        console.log("notifying device " + device.apnToken);
+        
         var apnDevice = new apn.Device(device.apnToken);
         var note = new apn.Notification();
         note.expiry = Math.floor(Date.now() / 1000) + 24 * 3600; // valid for 1 hour
